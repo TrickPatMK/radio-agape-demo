@@ -1,4 +1,4 @@
-﻿---
+---
 title: "System Architecture & Streaming Blueprint - Radio Agape"
 type: architecture
 tags:
@@ -44,7 +44,7 @@ flowchart TB
         Nginx["Nginx Reverse Proxy & SSL<br/>Port 443 (HTTPS)"]
         Postgres["PostgreSQL Database<br/>(Prisma ORM)"]
         
-        OBS -->|Icecast Source Stream (AAC/MP3)| Icecast
+        OBS -->|"Icecast Source Stream (AAC/MP3)"| Icecast
         Icecast -->|Proxy Pass /stream| Nginx
     end
 
@@ -89,6 +89,20 @@ flowchart TB
 | **Database** | **PostgreSQL** | Standar industri untuk data relasional, integritas data tinggi untuk jadwal, podcast, permohonan doa, dan pengguna admin. |
 | **Object Storage (Podcast)** | **Cloudflare R2** | Kompatibel dengan protokol AWS S3, namun memiliki keunggulan **$0 Egress Fee** (gratis biaya bandwidth pengunduhan audio). |
 | **Reverse Proxy & SSL** | **Nginx + Let's Encrypt** | Menangani sertifikat SSL/TLS HTTPS untuk stream audio dan API agar browser tidak memblokir audio (*no mixed-content*). |
+
+---
+
+### 3.1 Endpoint Live Server Siaran Eksisting (Agape FM Semarang)
+Berdasarkan audit infrastruktur live pada `http://agapefm.com/`, server Icecast riil stasiun telah aktif dan terhubung:
+* **Host Streaming**: `http://radio.agapefm.com:8000`
+* **Status Telemetri JSON**: `http://radio.agapefm.com:8000/status-json.xsl`
+* **Saluran Siaran Aktif**:
+  1. `/agapelive`: Siaran Utama 94.5 FM Studio Live (`http://radio.agapefm.com:8000/agapelive`)
+  2. `/alkitab.ogg`: Pembacaan Alkitab Suara 24 Jam (`http://radio.agapefm.com:8000/alkitab.ogg`)
+  3. `/khotbahpujian.ogg`: Khotbah & Pujian Penyejuk Hati (`http://radio.agapefm.com:8000/khotbahpujian.ogg`)
+  4. `/pujian.ogg`: Musik Pujian Nonstop (`http://radio.agapefm.com:8000/pujian.ogg`)
+  5. `/dkjlive`: Stream Format MP3 untuk kompatibilitas peramban lawas
+* **Internal Next.js Proxy Route**: `/api/stream-status` (menghindari isu CORS dan menyajikan telemetri jumlah listener aktual ke Studio Cockpit).
 
 ---
 
