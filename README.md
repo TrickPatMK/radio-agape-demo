@@ -55,6 +55,7 @@ Dokumentasi lengkap telah disinkronisasikan ke dalam Obsidian Knowledge Base (`m
 - 📄 **[Product Requirements Document (PRD) — Website Publik](docs/PRD.md)** — Spesifikasi lengkap seluruh modul publik: Streaming 24/7, player persisten, dan podcast.
 - 🎛️ **[PRD & Konsep CMS Dashboard (Studio Cockpit)](docs/PRD-CMS-DASHBOARD.md)** — Spesifikasi sistem operasional harian: Rundown hari ini, cockpit penyiar, moderasi doa, dan jadwal.
 - 🏗️ **[System Architecture Blueprint](docs/ARCHITECTURE.md)** — Topologi sistem, diagram alur audio, skema basis data, dan pembagian tugas agen AI.
+- 💰 **[Analisis Biaya & Budget End-to-End](docs/COST-ANALYSIS.md)** — Rincian biaya infrastruktur bulanan, Cloudflare R2 $0 egress, dan perbandingan 3 skenario scaling.
 - 🧭 **Obsidian Vault MOC**: `[[Radio-Agape/_MOC - Radio Agape]]`
 
 ---
