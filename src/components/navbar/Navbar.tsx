@@ -1,7 +1,8 @@
-"use client";
+﻿"use client";
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useAudio } from "@/context/AudioContext";
 import { 
@@ -29,20 +30,32 @@ export default function Navbar() {
   ];
 
   return (
-    <header className="sticky top-0 z-40 bg-slate-900/90 text-white backdrop-blur-md border-b border-slate-800 shadow-md">
+    <header className="sticky top-0 z-40 bg-slate-900/95 text-white backdrop-blur-md border-b border-slate-800 shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-20">
-          {/* Brand Logo */}
+          {/* Brand Logo with Official Agape FM Image */}
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-tr from-agape-600 to-amber-500 flex items-center justify-center shadow-lg shadow-agape-600/30 group-hover:scale-105 transition-transform">
-              <Radio className="w-6 h-6 text-white" />
+            <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden bg-white/10 p-1 flex items-center justify-center border border-slate-700/60 shadow group-hover:scale-105 transition-transform">
+              <Image 
+                src="/agapelogo.png" 
+                alt="Logo Radio Agape 94.5 FM Semarang" 
+                width={56} 
+                height={56} 
+                className="object-contain w-full h-full"
+                priority
+              />
             </div>
             <div>
-              <span className="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center gap-1.5">
-                RADIO <span className="text-amber-400">AGAPE</span>
-              </span>
-              <span className="text-[11px] font-medium tracking-wide text-slate-300 block -mt-1">
-                24/7 Kasih & Pengharapan
+              <div className="flex items-center gap-1.5">
+                <span className="text-lg sm:text-xl font-black tracking-tight text-white">
+                  94.5 FM <span className="text-amber-400">AGAPE</span>
+                </span>
+                <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                  SEMARANG
+                </span>
+              </div>
+              <span className="text-[11px] font-medium tracking-wide text-slate-300 block -mt-0.5">
+                Mitra Sejati Penyejuk Hati
               </span>
             </div>
           </Link>
@@ -69,11 +82,10 @@ export default function Navbar() {
             })}
           </nav>
 
-          {/* Right Action Buttons: Play Live & Studio Cockpit */}
+          {/* Right Action Buttons */}
           <div className="hidden sm:flex items-center gap-3">
-            {/* Quick Live Button */}
             <button
-              onClick={playLive}
+              onClick={() => playLive()}
               className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs sm:text-sm font-bold tracking-wide transition shadow-lg ${
                 isLive && isPlaying
                   ? "bg-red-600 text-white shadow-red-600/40 animate-pulse"
@@ -81,10 +93,9 @@ export default function Navbar() {
               }`}
             >
               <Volume2 className="w-4 h-4" />
-              {isLive && isPlaying ? "ON AIR PLAYING" : "PUTAR SIARAN"}
+              {isLive && isPlaying ? "ON AIR PLAYING" : "PUTAR SIARAN 94.5 FM"}
             </button>
 
-            {/* Studio Cockpit CMS Gateway */}
             <Link
               href="/cockpit"
               className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold border transition ${
@@ -92,7 +103,7 @@ export default function Navbar() {
                   ? "bg-amber-500 text-slate-950 border-amber-400 font-bold"
                   : "bg-slate-800/80 text-amber-300 border-amber-500/30 hover:bg-amber-500/10 hover:border-amber-400"
               }`}
-              title="Masuk ke Studio Cockpit & Rundown Harian"
+              title="Studio Cockpit & Kontrol Siaran"
             >
               <Sliders className="w-4 h-4 text-amber-400" />
               <span>Studio Cockpit</span>
@@ -102,7 +113,7 @@ export default function Navbar() {
           {/* Mobile Menu Button */}
           <div className="flex sm:hidden items-center gap-2">
             <button
-              onClick={playLive}
+              onClick={() => playLive()}
               className="p-2 rounded-full bg-red-600 text-white shadow-md text-xs font-bold flex items-center"
               aria-label="Putar Live"
             >
@@ -148,7 +159,7 @@ export default function Navbar() {
               className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg text-sm font-bold bg-amber-500 text-slate-950 shadow-md"
             >
               <Sliders className="w-4 h-4" />
-              Buka Studio Cockpit (Admin CMS)
+              Buka Studio Cockpit (CMS)
             </Link>
           </div>
         </div>

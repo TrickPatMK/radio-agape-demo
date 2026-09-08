@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 import { RADIO_INFO, PodcastEpisode } from "@/data/radioData";
@@ -23,8 +23,9 @@ interface AudioContextType {
   duration: number;
   playbackRate: number;
   isLoading: boolean;
+  activeChannelId: string;
   togglePlay: () => void;
-  playLive: () => void;
+  playLive: (channelId?: string) => void;
   playPodcast: (episode: PodcastEpisode) => void;
   seekTo: (time: number) => void;
   skipSeconds: (seconds: number) => void;
@@ -34,18 +35,19 @@ interface AudioContextType {
 }
 
 const DEFAULT_LIVE_TRACK: ActiveTrack = {
-  id: "live-main",
+  id: "main",
   type: "LIVE",
-  title: "Radio Agape — Live 24/7",
-  subtitle: "Bincang Keluarga Bahtera Kasih (On Air)",
+  title: "94.5 FM Radio Agape Semarang",
+  subtitle: "Mitra Sejati Penyejuk Hati (Siaran Studio 24/7)",
   url: RADIO_INFO.liveStreamUrl,
-  coverImage: "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=600&auto=format&fit=crop&q=80",
+  coverImage: "/agapelogo.png",
 };
 
 const AudioContext = createContext<AudioContextType | undefined>(undefined);
 
 export function AudioProvider({ children }: { children: React.ReactNode }) {
   const [currentTrack, setCurrentTrack] = useState<ActiveTrack>(DEFAULT_LIVE_TRACK);
+  const [activeChannelId, setActiveChannelId] = useState<string>("main");
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolumeState] = useState(0.85);
   const [isMuted, setIsMuted] = useState(false);
@@ -56,7 +58,6 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Initialize HTML5 Audio Element once
   useEffect(() => {
     const audio = new Audio();
     audio.preload = "none";
@@ -100,15 +101,14 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  // Update MediaSession API on track change or state change
   useEffect(() => {
     if (typeof window !== "undefined" && "mediaSession" in navigator) {
       navigator.mediaSession.metadata = new MediaMetadata({
         title: currentTrack.title,
         artist: currentTrack.subtitle,
-        album: "Radio Agape Streaming Platform",
+        album: "Radio Agape 94.5 FM Semarang",
         artwork: [
-          { src: currentTrack.coverImage, sizes: "512x512", type: "image/jpeg" },
+          { src: currentTrack.coverImage, sizes: "512x512", type: "image/png" },
         ],
       });
 
@@ -142,7 +142,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
       await audioRef.current.play();
       setIsPlaying(true);
     } catch (err) {
-      console.warn("Audio autoplay blocked or stream error, ready for user interaction:", err);
+      console.warn("Audio play blocked or stream buffering:", err);
       setIsPlaying(false);
     } finally {
       setIsLoading(false);
@@ -168,9 +168,20 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const playLive = () => {
-    if (currentTrack.type === "LIVE" && isPlaying) return;
-    loadAndPlayTrack(DEFAULT_LIVE_TRACK);
+  const playLive = (channelId: string = "main") => {
+    const ch = RADIO_INFO.channels.find(c => c.id === channelId) || RADIO_INFO.channels[0];
+    setActiveChannelId(ch.id);
+
+    const liveTrack: ActiveTrack = {
+      id: ch.id,
+      type: "LIVE",
+      title: ch.name,
+      subtitle: `${RADIO_INFO.frequency} • ${ch.genre}`,
+      url: ch.url,
+      coverImage: "/agapelogo.png",
+    };
+
+    loadAndPlayTrack(liveTrack);
   };
 
   const playPodcast = (episode: PodcastEpisode) => {
@@ -232,6 +243,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         duration: currentTrack.type === "PODCAST" ? (duration || currentTrack.durationSeconds || 0) : 0,
         playbackRate,
         isLoading,
+        activeChannelId,
         togglePlay,
         playLive,
         playPodcast,

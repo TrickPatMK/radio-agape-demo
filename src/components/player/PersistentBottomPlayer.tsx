@@ -1,8 +1,10 @@
-"use client";
+﻿"use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import { useAudio } from "@/context/AudioContext";
 import { formatTime } from "@/lib/utils";
+import { RADIO_INFO } from "@/data/radioData";
 import { 
   Play, 
   Pause, 
@@ -13,7 +15,8 @@ import {
   Radio, 
   Headphones, 
   Loader2,
-  Gauge
+  Gauge,
+  ListMusic
 } from "lucide-react";
 
 export default function PersistentBottomPlayer() {
@@ -27,6 +30,7 @@ export default function PersistentBottomPlayer() {
     duration,
     playbackRate,
     isLoading,
+    activeChannelId,
     togglePlay,
     playLive,
     seekTo,
@@ -37,6 +41,7 @@ export default function PersistentBottomPlayer() {
   } = useAudio();
 
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
+  const [showChannelMenu, setShowChannelMenu] = useState(false);
 
   const cycleSpeed = () => {
     const speeds = [1.0, 1.25, 1.5, 2.0];
@@ -50,7 +55,7 @@ export default function PersistentBottomPlayer() {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-slate-950/95 text-white backdrop-blur-lg border-t border-slate-800/80 shadow-[0_-10px_30px_rgba(0,0,0,0.5)] transition-all">
-      {/* Mini Progress Bar for Podcasts at very top edge */}
+      {/* Mini Progress Bar for Podcasts */}
       {!isLive && duration > 0 && (
         <div className="relative w-full h-1.5 bg-slate-800 cursor-pointer group">
           <input
@@ -69,14 +74,15 @@ export default function PersistentBottomPlayer() {
       )}
 
       <div className="max-w-7xl mx-auto px-4 py-2.5 sm:py-3 flex items-center justify-between gap-2 sm:gap-6">
-        {/* LEFT: Track Information & Cover Art */}
+        {/* LEFT: Track Information & Official Logo */}
         <div className="flex items-center gap-3 min-w-0 flex-1 sm:flex-initial sm:w-72 md:w-80">
-          <div className="relative flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden shadow-md border border-slate-700 bg-slate-900">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img 
-              src={currentTrack.coverImage} 
+          <div className="relative flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden shadow-md border border-slate-700 bg-slate-900 p-1 flex items-center justify-center">
+            <Image 
+              src={currentTrack.coverImage || "/agapelogo.png"} 
               alt={currentTrack.title} 
-              className="w-full h-full object-cover"
+              width={56} 
+              height={56} 
+              className="w-full h-full object-contain"
             />
             {isLive && (
               <span className="absolute top-1 right-1 flex h-2.5 w-2.5">
@@ -90,7 +96,7 @@ export default function PersistentBottomPlayer() {
             <div className="flex items-center gap-2">
               {isLive ? (
                 <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-600/90 text-white tracking-wider uppercase">
-                  <Radio className="w-2.5 h-2.5" /> LIVE ON AIR
+                  <Radio className="w-2.5 h-2.5" /> 94.5 FM LIVE
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">
@@ -107,10 +113,9 @@ export default function PersistentBottomPlayer() {
           </div>
         </div>
 
-        {/* CENTER: Playback Controls & Progress */}
+        {/* CENTER: Playback Controls & Waveform */}
         <div className="flex flex-col items-center justify-center flex-1 max-w-xl">
           <div className="flex items-center gap-2 sm:gap-4">
-            {/* Podcast: Rewind 10s */}
             {!isLive && (
               <button
                 onClick={() => skipSeconds(-10)}
@@ -121,7 +126,6 @@ export default function PersistentBottomPlayer() {
               </button>
             )}
 
-            {/* Play/Pause Button */}
             <button
               onClick={togglePlay}
               className="p-3 sm:p-3.5 bg-agape-500 hover:bg-agape-400 text-white rounded-full shadow-lg shadow-agape-500/30 transition transform hover:scale-105 active:scale-95 flex items-center justify-center"
@@ -136,7 +140,6 @@ export default function PersistentBottomPlayer() {
               )}
             </button>
 
-            {/* Podcast: Skip 30s */}
             {!isLive && (
               <button
                 onClick={() => skipSeconds(30)}
@@ -147,7 +150,6 @@ export default function PersistentBottomPlayer() {
               </button>
             )}
 
-            {/* Podcast: Speed Multiplier */}
             {!isLive && (
               <button
                 onClick={cycleSpeed}
@@ -160,7 +162,6 @@ export default function PersistentBottomPlayer() {
             )}
           </div>
 
-          {/* Time indicator or Live indicator bar */}
           <div className="w-full mt-1 hidden sm:flex items-center justify-center gap-3 text-xs text-slate-400">
             {isLive ? (
               <div className="flex items-center gap-2">
@@ -171,7 +172,7 @@ export default function PersistentBottomPlayer() {
                   <span className="w-1 bg-agape-400 animate-pulse h-1.5 rounded-full"></span>
                 </span>
                 <span className="text-slate-300 font-medium tracking-wide">
-                  Mengudara 24 Jam Nonstop • Radio Agape Streaming
+                  94.5 FM Semarang • Siaran Langsung Penyejuk Hati
                 </span>
               </div>
             ) : (
@@ -189,19 +190,44 @@ export default function PersistentBottomPlayer() {
           </div>
         </div>
 
-        {/* RIGHT: Live Quick Switch & Volume Control */}
-        <div className="flex items-center justify-end gap-2 sm:gap-4 sm:w-72">
-          {/* Switch to Live Button if listening to podcast */}
-          {!isLive && (
+        {/* RIGHT: Multi-channel Stream Selector & Volume */}
+        <div className="flex items-center justify-end gap-2 sm:gap-3 sm:w-72">
+          {/* Channel Selector Dropdown */}
+          <div className="relative">
             <button
-              onClick={playLive}
-              className="hidden md:flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-red-600/90 hover:bg-red-500 text-white rounded-full transition shadow-md hover:shadow-red-600/30"
-              title="Beralih ke siaran langsung radio 24/7"
+              onClick={() => setShowChannelMenu(!showChannelMenu)}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-slate-800/90 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700 transition"
+              title="Pilih Saluran Audio Agape"
             >
-              <Radio className="w-3.5 h-3.5" />
-              Putar Live 24/7
+              <ListMusic className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden md:inline">Saluran</span>
             </button>
-          )}
+
+            {showChannelMenu && (
+              <div className="absolute right-0 bottom-10 w-64 bg-slate-900 border border-slate-800 rounded-2xl p-2 shadow-2xl z-50 space-y-1">
+                <span className="block px-3 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                  Pilih Saluran Audio Agape
+                </span>
+                {RADIO_INFO.channels.map((ch) => (
+                  <button
+                    key={ch.id}
+                    onClick={() => {
+                      playLive(ch.id);
+                      setShowChannelMenu(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 rounded-xl text-xs flex flex-col transition ${
+                      activeChannelId === ch.id
+                        ? "bg-agape-600 text-white font-bold"
+                        : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                    }`}
+                  >
+                    <span>{ch.name}</span>
+                    <span className="text-[10px] opacity-75 font-normal">{ch.genre}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
           {/* Volume Control */}
           <div 
@@ -221,7 +247,6 @@ export default function PersistentBottomPlayer() {
               )}
             </button>
 
-            {/* Volume slider (desktop hover or mobile always accessible) */}
             <div className={`hidden sm:flex items-center w-20 transition-all ${showVolumeSlider ? 'opacity-100' : 'opacity-70'}`}>
               <input
                 type="range"

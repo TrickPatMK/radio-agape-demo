@@ -60,7 +60,7 @@ export default function HomePage() {
 
               <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-2">
                 <button
-                  onClick={playLive}
+                  onClick={() => playLive()}
                   className="inline-flex items-center gap-3 px-6 py-3.5 rounded-full text-base font-bold bg-gradient-to-r from-agape-600 to-amber-600 text-white shadow-xl shadow-agape-600/30 hover:scale-105 active:scale-95 transition-all"
                 >
                   {isLive && isPlaying ? (
@@ -132,7 +132,7 @@ export default function HomePage() {
                 {/* Interactive Action within Card */}
                 <div className="mt-6 pt-5 border-t border-slate-700/60 flex items-center justify-between gap-3">
                   <button
-                    onClick={playLive}
+                    onClick={() => playLive()}
                     className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 transition shadow-md"
                   >
                     {isLive && isPlaying ? (

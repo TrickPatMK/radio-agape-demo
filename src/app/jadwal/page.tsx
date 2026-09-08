@@ -95,7 +95,7 @@ export default function JadwalPage() {
                 {/* Live Play Trigger if On-Air */}
                 {isOnAir && (
                   <button
-                    onClick={playLive}
+                    onClick={() => playLive()}
                     className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 transition shadow-md"
                   >
                     {isLive && isPlaying ? (

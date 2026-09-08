@@ -1,4 +1,4 @@
-export interface ScheduleItem {
+﻿export interface ScheduleItem {
   id: string;
   day: number; // 0 = Minggu, 1 = Senin, ... 6 = Sabtu
   startTime: string; // "06:00"
@@ -7,7 +7,6 @@ export interface ScheduleItem {
   host: string;
   category: 'Renungan' | 'Pujian' | 'Talkshow' | 'Doa' | 'Youth' | 'Keluarga';
   description: string;
-  image?: string;
 }
 
 export interface PodcastEpisode {
@@ -47,12 +46,59 @@ export interface RundownItem {
 }
 
 export const RADIO_INFO = {
-  name: "Radio Agape",
-  tagline: "Menyapa Hati dengan Kasih & Pengharapan",
-  description: "Stasiun siaran radio rohani 24/7 menghadirkan firman, renungan inspiratif, dan pujian penyembahan tanpa henti bagi keluarga dan komunitas.",
-  liveStreamUrl: "https://stream.zeno.fm/f3wvbbqmdg8uv", // Reliable public audio stream sample
-  whatsappBroadcast: "https://wa.me/6281234567890?text=Shalom%20Radio%20Agape,%20saya%20ingin%20request%20lagu%20dan%20titip%20salam",
-  studioPhone: "+62 812-3456-7890",
+  name: "Radio Agape FM Semarang",
+  frequency: "94.5 MHz FM",
+  tagline: "Mitra Sejati Penyejuk Hati",
+  description: "Stasiun Radio 94.5 FM Agape Semarang menghadirkan alunan musik rohani penyejuk hati, firman, renungan inspiratif, dan pembinaan keluarga 24 jam nonstop bagi masyarakat Semarang dan seluruh dunia.",
+  address: "Jl. Pringgading 13, Semarang 50135, Jawa Tengah, Indonesia",
+  email: "info@agapefm.com",
+  officialWebsite: "http://agapefm.com",
+  liveStreamUrl: "http://radio.agapefm.com:8000/agapelive",
+  channels: [
+    {
+      id: "main",
+      name: "94.5 FM Siaran Utama Studio",
+      genre: "Mitra Sejati Penyejuk Hati",
+      url: "http://radio.agapefm.com:8000/agapelive",
+      format: "application/ogg"
+    },
+    {
+      id: "alkitab",
+      name: "Alkitab Suara 24 Jam",
+      genre: "Musik Rohani Penyejuk Hati",
+      url: "http://radio.agapefm.com:8000/alkitab.ogg",
+      format: "application/ogg"
+    },
+    {
+      id: "khotbah",
+      name: "Khotbah & Pujian Penyejuk Hati",
+      genre: "Khotbah dan Pujian penyejuk Hati",
+      url: "http://radio.agapefm.com:8000/khotbahpujian.ogg",
+      format: "application/ogg"
+    },
+    {
+      id: "pujian",
+      name: "Pujian Nonstop",
+      genre: "Musik Pujian Penyejuk Hati",
+      url: "http://radio.agapefm.com:8000/pujian.ogg",
+      format: "application/ogg"
+    },
+    {
+      id: "mp3fallback",
+      name: "Audio Stream MP3",
+      genre: "Compatibility Stream",
+      url: "http://radio.agapefm.com:8000/dkjlive",
+      format: "audio/mpeg"
+    }
+  ],
+  socials: {
+    instagram: "https://www.instagram.com/94.5agapefm_smg/",
+    facebook: "https://www.facebook.com/profile.php?id=100063828833703",
+    onlineRadioBox: "https://onlineradiobox.com/id/agape/?cs=id.agape",
+    fmStreaming: "http://fmstream.org/index.php?i=45616",
+    surfMusic: "https://www.surfmusic.de/radio-station/agape-94-5-fm,16115.html"
+  },
+  whatsappBroadcast: "https://wa.me/6281234567890?text=Shalom%2094.5%20Agape%20FM%20Semarang,%20saya%20ingin%20request%20lagu%20dan%20titip%20salam",
   bankDonation: {
     bankName: "BCA (Bank Central Asia)",
     accountNumber: "8420-9988-12",
@@ -63,23 +109,23 @@ export const RADIO_INFO = {
 export const MOCK_SCHEDULE: ScheduleItem[] = [
   {
     id: "sch-1",
-    day: 1, // Senin
+    day: 1,
     startTime: "05:00",
     endTime: "07:00",
     title: "Embun Pagi: Saat Teduh Bersama Firman",
     host: "Pdt. Yohanes Santoso",
     category: "Renungan",
-    description: "Memulai pagi dengan doa fajar, renungan ayat emas hari ini, dan pujian penyembahan teduh.",
+    description: "Memulai pagi dengan doa fajar, renungan ayat emas hari ini, dan pujian penyembahan penyejuk hati.",
   },
   {
     id: "sch-2",
     day: 1,
     startTime: "07:00",
     endTime: "09:00",
-    title: "Agape Morning Booster",
+    title: "Agape Morning Booster Semarang",
     host: "Ruth Novita & Daniel Pratama",
     category: "Pujian",
-    description: "Lagu-lagu pujian berenergi, kabar baik inspiratif, dan salam pendengar pembakar semangat kerja.",
+    description: "Lagu-lagu pujian berenergi, kabar baik seputar kota Semarang, dan salam pendengar pembakar semangat kerja.",
   },
   {
     id: "sch-3",
@@ -89,14 +135,14 @@ export const MOCK_SCHEDULE: ScheduleItem[] = [
     title: "Bincang Keluarga Bahtera Kasih",
     host: "Ibu Maria & Ev. Andreas",
     category: "Keluarga",
-    description: "Diskusi seputar komunikasi suami-istri, mendidik anak di era digital, dan konseling keluarga.",
+    description: "Konseling keluarga dan tanya jawab seputar komunikasi suami-istri dan pengasuhan anak.",
   },
   {
     id: "sch-4",
     day: 1,
     startTime: "11:00",
     endTime: "13:00",
-    title: "Pujian di Tengah Hari",
+    title: "Alunan Pujian di Tengah Hari",
     host: "AutoDJ Agape",
     category: "Pujian",
     description: "Kompilasi lagu pujian dan penyembahan instrumental menemani waktu istirahat siang.",
@@ -106,20 +152,20 @@ export const MOCK_SCHEDULE: ScheduleItem[] = [
     day: 1,
     startTime: "13:00",
     endTime: "15:00",
-    title: "Ruang Syafaat & Pokok Doa",
+    title: "Ruang Syafaat: Doa Bagi Kota & Bangsa",
     host: "Pnt. Stefanus",
     category: "Doa",
-    description: "Sesi siaran langsung membawa permohonan doa pendengar ke hadapan Tuhan secara serempak.",
+    description: "Sesi siaran langsung membawa permohonan doa pendengar dan doa bagi kesejahteraan kota Semarang.",
   },
   {
     id: "sch-6",
     day: 1,
     startTime: "15:00",
     endTime: "17:00",
-    title: "Youth Agape Sound",
+    title: "Youth Agape Sound 94.5",
     host: "Kevin & Michelle",
     category: "Youth",
-    description: "Konten relevan untuk generasi muda, musik rohani kontemporer, dan obrolan seputar panggilan hidup.",
+    description: "Musik rohani kontemporer, inspirasi anak muda, dan obrolan seputar gaya hidup beriman.",
   },
   {
     id: "sch-7",
@@ -129,7 +175,7 @@ export const MOCK_SCHEDULE: ScheduleItem[] = [
     title: "Agape Sore Menjelang Senja",
     host: "David Gunawan",
     category: "Talkshow",
-    description: "Menemani perjalanan pulang kerja dengan lagu penyejuk hati dan refleksi hikmat harian.",
+    description: "Menemani perjalanan pulang di jalanan Semarang dengan lagu penyejuk hati dan refleksi hikmat.",
   },
   {
     id: "sch-8",
@@ -139,17 +185,17 @@ export const MOCK_SCHEDULE: ScheduleItem[] = [
     title: "Mimbar Firman Malam",
     host: "Pdt. Dr. Samuel Halim",
     category: "Renungan",
-    description: "Kajian eksposisi firman Tuhan yang mendalam untuk memperkuat fondasi iman keluarga.",
+    description: "Kajian eksposisi firman Tuhan untuk membangun keteguhan iman seluruh anggota keluarga.",
   },
   {
     id: "sch-9",
     day: 1,
     startTime: "21:00",
     endTime: "00:00",
-    title: "Malam Teduh Bersama Kasih-Nya",
+    title: "Malam Teduh Penyejuk Hati",
     host: "AutoDJ Agape",
     category: "Pujian",
-    description: "Alunan himne klasik dan mazmur pengantar istirahat malam yang damai.",
+    description: "Alunan kidung puji-pujian dan pembacaan Mazmur pengantar istirahat malam yang damai.",
   },
 ];
 
@@ -163,46 +209,46 @@ export const MOCK_PODCASTS: PodcastEpisode[] = [
     durationSeconds: 1458,
     publishedDate: "7 Sep 2026",
     scripture: "Mazmur 46:1-12",
-    showNotes: "Tuhan adalah tempat perlindungan dan kekuatan kita, sebagai penolong dalam kesesakan sangat terbukti. Dalam renungan ini kita belajar berhenti mengandalkan kekuatan diri sendiri dan melepaskan kendali kepada Allah yang berdaulat.",
+    showNotes: "Tuhan adalah tempat perlindungan dan kekuatan kita, sebagai penolong dalam kesesakan sangat terbukti. Dalam renungan ini kita belajar melepaskan kecemasan kepada Allah yang berdaulat.",
     audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
     coverImage: "https://images.unsplash.com/photo-1507692049790-de58290a4334?w=600&auto=format&fit=crop&q=80"
   },
   {
     id: "pod-2",
     series: "Bahtera Keluarga",
-    title: "Membangun Mezbah Doa di Tengah Kesibukan Rumah Tangga",
+    title: "Membangun Mezbah Doa di Rumah Tangga",
     speaker: "Ev. Andreas & Ibu Maria",
     duration: "32:05",
     durationSeconds: 1925,
     publishedDate: "5 Sep 2026",
     scripture: "Yosua 24:14-15",
-    showNotes: "Bagaimana sebuah keluarga Kristen modern menjaga persekutuan doa di tengah jadwal kerja dan sekolah yang padat? Temukan 4 langkah praktis menyusun waktu doa keluarga yang bermakna tanpa rasa tertekan.",
+    showNotes: "Bagaimana menjaga persekutuan doa keluarga di tengah kesibukan kerja dan sekolah di kota besar? Temukan 4 langkah praktis menyusun saat teduh bersama keluarga.",
     audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
     coverImage: "https://images.unsplash.com/photo-1511895426328-dc8714191300?w=600&auto=format&fit=crop&q=80"
   },
   {
     id: "pod-3",
     series: "Khotbah Minggu Raya",
-    title: "Iman yang Tidak Goyah di Masa Ketidakpastian",
+    title: "Iman yang Berakar Kuat di Masa Sukar",
     speaker: "Pdt. Dr. Samuel Halim",
     duration: "41:30",
     durationSeconds: 2490,
     publishedDate: "1 Sep 2026",
     scripture: "Ibrani 11:1-6",
-    showNotes: "Khotbah eksposisi mengenai definisi iman yang sejati. Iman bukan berarti ketiadaan masalah, melainkan kehadiran Kristus yang memberi kepastian di dalam hati kita saat masa depan tampak samar.",
+    showNotes: "Khotbah mendalam mengenai fondasi iman sejati di dalam Kristus Yesus.",
     audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
     coverImage: "https://images.unsplash.com/photo-1438232992991-995b7058bbb3?w=600&auto=format&fit=crop&q=80"
   },
   {
     id: "pod-4",
     series: "Youth Agape Talks",
-    title: "Menemukan Panggilan & Karir yang Memuliakan Tuhan",
-    speaker: "Kevin Pratama & Ruth Novita",
+    title: "Panggilan Hidup & Integritas Generasi Muda",
+    speaker: "Kevin Pratama & Michelle",
     duration: "28:45",
     durationSeconds: 1725,
     publishedDate: "28 Agu 2026",
     scripture: "Kolose 3:23-24",
-    showNotes: "Apakah panggilan pelayanan hanya untuk pendeta? Obrolan santai namun mendalam bagi anak muda yang sedang mencari arah kerja, kuliah, dan karya di dunia profesional.",
+    showNotes: "Inspirasi bagi pemuda-pemudi yang sedang bergumul dalam karir, studi, dan pelayanan.",
     audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3",
     coverImage: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=600&auto=format&fit=crop&q=80"
   }
@@ -216,16 +262,16 @@ export const INITIAL_RUNDOWN: RundownItem[] = [
     host: "Pdt. Yohanes Santoso",
     type: "LIVE",
     status: "COMPLETED",
-    producerNote: "Pembukaan lancar, permohonan doa pagi 14 pokok telah dibacakan."
+    producerNote: "Siaran pagi lancar, 14 pokok doa pendengar telah dibacakan di udara."
   },
   {
     id: "rd-2",
     timeSlot: "07:00 - 09:00",
-    title: "Agape Morning Booster",
+    title: "Agape Morning Booster Semarang",
     host: "Ruth Novita & Daniel Pratama",
     type: "LIVE",
     status: "COMPLETED",
-    producerNote: "Segmen salam pendengar berjalan ramai, request lagu penuh."
+    producerNote: "Request lagu dan salam pendengar Semarang penuh antusias."
   },
   {
     id: "rd-3",
@@ -234,25 +280,25 @@ export const INITIAL_RUNDOWN: RundownItem[] = [
     host: "Ibu Maria & Ev. Andreas",
     type: "LIVE",
     status: "ON_AIR",
-    producerNote: "Narasumber hadir di studio. Buka sesi tanya jawab via WhatsApp pada pukul 10:15."
+    producerNote: "Topik komunikasi keluarga. Buka interaksi live WhatsApp menit ke-30."
   },
   {
     id: "rd-4",
     timeSlot: "11:00 - 13:00",
-    title: "Pujian di Tengah Hari",
+    title: "Alunan Pujian di Tengah Hari",
     host: "AutoDJ Agape",
     type: "MUSIC",
     status: "UP_NEXT",
-    producerNote: "Playlist rotasi otomatis. Cek audio level sebelum handover."
+    producerNote: "Rotasi musik pujian penyejuk hati otomatis."
   },
   {
     id: "rd-5",
     timeSlot: "13:00 - 15:00",
-    title: "Ruang Syafaat & Pokok Doa",
+    title: "Ruang Syafaat: Doa Bagi Kota & Bangsa",
     host: "Pnt. Stefanus",
     type: "PRAYER",
     status: "SCHEDULED",
-    producerNote: "Fokus pada doa kesembuhan dan keluarga jemaat yang masuk hari ini."
+    producerNote: "Sesi doa khusus bagi kebutuhan jemaat dan kota Semarang."
   }
 ];
 
@@ -260,10 +306,10 @@ export const INITIAL_PRAYER_REQUESTS: PrayerRequest[] = [
   {
     id: "pray-1",
     senderName: "Ibu Susan Wijaya",
-    city: "Surabaya",
+    city: "Semarang Barat",
     phone: "081298765432",
     category: "Kesehatan",
-    content: "Mohon dukungan doa untuk kesembuhan ibu mertua saya yang sedang dirawat di RS karena komplikasi jantung. Kiranya Tuhan beri kekuatan dan pemulihan sempurna.",
+    content: "Mohon dukungan doa untuk kesembuhan ibu mertua yang sedang dirawat di RS Telogorejo Semarang. Percaya kuasa pemulihan Tuhan.",
     allowBroadcast: true,
     status: "PENDING",
     createdAt: "10 menit yang lalu"
@@ -271,31 +317,31 @@ export const INITIAL_PRAYER_REQUESTS: PrayerRequest[] = [
   {
     id: "pray-2",
     senderName: "Bpk. Daniel Sitorus",
-    city: "Medan",
+    city: "Semarang Candi",
     phone: "081377889900",
     category: "Pekerjaan",
-    content: "Mohon doa untuk kelancaran usaha keluarga yang sedang mengalami tantangan finansial. Percaya Tuhan buka jalan dan mencukupkan.",
+    content: "Mohon doa untuk kelancaran usaha keluarga. Kiranya Tuhan buka jalan dan memberkati pekerjaan tangan kami.",
     allowBroadcast: true,
     status: "ON_AIR_READING",
     createdAt: "25 menit yang lalu"
   },
   {
     id: "pray-3",
-    senderName: "Anonim (Hamba Tuhan)",
-    city: "Jakarta Barat",
+    senderName: "Anonim (Jemaat Semarang)",
+    city: "Semarang",
     category: "Spiritual",
-    content: "Mohon didoakan pergumulan batin pribadi agar diberi kelegaan dan pengampunan. Kiranya tim pastoral berkenan mendoakan secara khusus.",
+    content: "Mohon didoakan ketenangan batin dan pemulihan iman pribadi agar terus setia mengiring Tuhan.",
     allowBroadcast: false,
     status: "PASTORAL_CARE",
     createdAt: "1 jam yang lalu"
   },
   {
     id: "pray-4",
-    senderName: "Theresia & Suami",
-    city: "Bandung",
+    senderName: "Keluarga Bpk. Hendra",
+    city: "Semarang Timur",
     phone: "085612345678",
     category: "Keluarga",
-    content: "Mengucap syukur atas ulang tahun pernikahan ke-10 hari ini. Mohon doa agar pernikahan kami terus berakar kuat di dalam kasih Kristus.",
+    content: "Mengucap syukur atas pertolongan Tuhan dalam pendidikan anak. Terus mohon hikmat surgawi membimbing rumah tangga kami.",
     allowBroadcast: true,
     status: "COMPLETED",
     createdAt: "2 jam yang lalu"
