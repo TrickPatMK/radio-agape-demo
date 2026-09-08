@@ -1,4 +1,4 @@
-﻿# 📻 Radio Agape — Official Website & Streaming Platform
+# 📻 Radio Agape — Official Website & Streaming Platform
 
 Platform resmi penyiaran digital **Radio Agape**: menghadirkan siaran streaming audio langsung 24/7, arsip podcast & audio-on-demand, jadwal siaran terpadu, serta sarana interaksi jemaat/pendengar (permohonan doa dan dukungan persembahan kasih).
 
@@ -52,7 +52,8 @@ Detail arsitektur lengkap dapat dibaca pada [docs/ARCHITECTURE.md](docs/ARCHITEC
 ## 📚 Dokumentasi Proyek
 
 Dokumentasi lengkap telah disinkronisasikan ke dalam Obsidian Knowledge Base (`main-vault`):
-- 📄 **[Product Requirements Document (PRD)](docs/PRD.md)** — Spesifikasi lengkap seluruh modul fungsional, non-fungsional, dan persona pengguna.
+- 📄 **[Product Requirements Document (PRD) — Website Publik](docs/PRD.md)** — Spesifikasi lengkap seluruh modul publik: Streaming 24/7, player persisten, dan podcast.
+- 🎛️ **[PRD & Konsep CMS Dashboard (Studio Cockpit)](docs/PRD-CMS-DASHBOARD.md)** — Spesifikasi sistem operasional harian: Rundown hari ini, cockpit penyiar, moderasi doa, dan jadwal.
 - 🏗️ **[System Architecture Blueprint](docs/ARCHITECTURE.md)** — Topologi sistem, diagram alur audio, skema basis data, dan pembagian tugas agen AI.
 - 🧭 **Obsidian Vault MOC**: `[[Radio-Agape/_MOC - Radio Agape]]`
 
