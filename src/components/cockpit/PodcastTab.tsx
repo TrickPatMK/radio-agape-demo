@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { PodcastEpisode } from "@/data/radioData";
-import { CheckCircle2 } from "lucide-react";
+import { withBasePath } from "@/lib/utils";
 
 interface PodcastTabProps {
   podcasts: PodcastEpisode[];
@@ -10,7 +10,7 @@ interface PodcastTabProps {
 }
 
 export default function PodcastTab({ podcasts, setPodcasts }: PodcastTabProps) {
-  const [success, setSuccess] = useState(false);
+  const [savedTitle, setSavedTitle] = useState<string | null>(null);
   const [newPod, setNewPod] = useState({
     title: "",
     speaker: "",
@@ -28,20 +28,22 @@ export default function PodcastTab({ podcasts, setPodcasts }: PodcastTabProps) {
     const episode: PodcastEpisode = {
       id: `pod-${Date.now()}`,
       series: newPod.series,
+      shortTab: newPod.scripture || "Terbaru",
       title: newPod.title,
       speaker: newPod.speaker,
       duration: newPod.duration,
       durationSeconds: 1500,
-      publishedDate: "Hari Ini",
+      publishedDate: "Hari ini",
       scripture: newPod.scripture || "Renungan Firman",
-      showNotes: newPod.showNotes,
+      showNotes: newPod.showNotes || "Rekaman siaran khotbah Radio Agape Semarang.",
       audioUrl: newPod.audioUrl,
-      coverImage: "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=600&auto=format&fit=crop&q=80",
+      coverImage: withBasePath("/media/semarang-lawang-sewu-02.jpg"),
+      coverAlt: "Gedung bersejarah Lawang Sewu Semarang",
     };
 
     setPodcasts([episode, ...podcasts]);
-    setSuccess(true);
-    setTimeout(() => setSuccess(false), 3000);
+    setSavedTitle(episode.title);
+    window.setTimeout(() => setSavedTitle(null), 3500);
     setNewPod({
       title: "",
       speaker: "",
@@ -54,56 +56,60 @@ export default function PodcastTab({ podcasts, setPodcasts }: PodcastTabProps) {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-bold text-white">Publikasi Rekaman Khotbah & Podcast Baru</h2>
-        <p className="text-xs text-slate-400">Unggah episode baru agar langsung tampil di katalog website dan terdistribusi via RSS ke Spotify.</p>
-      </div>
-
-      {success && (
-        <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4" />
-          Episode podcast berhasil diterbitkan! Telah muncul di katalog website publik.
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+      {/* Left: Publish Form */}
+      <form onSubmit={handleCreate} className="lg:col-span-7 cockpit-card space-y-4">
+        <div className="flex items-baseline justify-between gap-2">
+          <h2 className="m-0 text-[16px] font-semibold text-white">
+            Terbitkan episode khotbah baru
+          </h2>
+          {savedTitle && (
+            <span className="cockpit-pill pos">Tersimpan: {savedTitle.slice(0, 22)}</span>
+          )}
         </div>
-      )}
 
-      <form onSubmit={handleCreate} className="p-6 sm:p-8 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl space-y-5">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          <div>
-            <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
-              Judul Episode Khotbah / Renungan <span className="text-red-400">*</span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div className="space-y-1.5">
+            <label htmlFor="pod-title" className="block text-[13px] text-[#b4b4b4]">
+              Judul rekaman khotbah *
             </label>
             <input
+              id="pod-title"
               type="text"
               required
-              placeholder="Contoh: Menemukan Kedamaian di Musim Sukar"
+              placeholder="Menemukan Damai di Musim Sukar"
               value={newPod.title}
               onChange={(e) => setNewPod({ ...newPod, title: e.target.value })}
-              className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-amber-400"
+              className="cockpit-input"
             />
           </div>
-          <div>
-            <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
-              Nama Pengkhotbah / Pembicara <span className="text-red-400">*</span>
+
+          <div className="space-y-1.5">
+            <label htmlFor="pod-speaker" className="block text-[13px] text-[#b4b4b4]">
+              Pengkhotbah atau pembicara *
             </label>
             <input
+              id="pod-speaker"
               type="text"
               required
-              placeholder="Contoh: Pdt. Dr. Samuel Halim"
+              placeholder="Pdt. Dr. Samuel Halim"
               value={newPod.speaker}
               onChange={(e) => setNewPod({ ...newPod, speaker: e.target.value })}
-              className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-amber-400"
+              className="cockpit-input"
             />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-          <div>
-            <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Seri Podcast</label>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+          <div className="space-y-1.5">
+            <label htmlFor="pod-series" className="block text-[13px] text-[#b4b4b4]">
+              Seri program
+            </label>
             <select
+              id="pod-series"
               value={newPod.series}
               onChange={(e) => setNewPod({ ...newPod, series: e.target.value })}
-              className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-amber-400"
+              className="cockpit-input"
             >
               <option value="Embun Pagi Seri Mazmur">Embun Pagi Seri Mazmur</option>
               <option value="Bahtera Keluarga">Bahtera Keluarga</option>
@@ -111,46 +117,81 @@ export default function PodcastTab({ podcasts, setPodcasts }: PodcastTabProps) {
               <option value="Youth Agape Talks">Youth Agape Talks</option>
             </select>
           </div>
-          <div>
-            <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Ayat Rujukan</label>
+
+          <div className="space-y-1.5">
+            <label htmlFor="pod-ref" className="block text-[13px] text-[#b4b4b4]">
+              Ayat rujukan
+            </label>
             <input
+              id="pod-ref"
               type="text"
-              placeholder="Mazmur 23:1-6"
+              placeholder="Mazmur 23:1–6"
               value={newPod.scripture}
               onChange={(e) => setNewPod({ ...newPod, scripture: e.target.value })}
-              className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-amber-400"
+              className="cockpit-input"
             />
           </div>
-          <div>
-            <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Durasi Audio</label>
+
+          <div className="space-y-1.5">
+            <label htmlFor="pod-dur" className="block text-[13px] text-[#b4b4b4]">
+              Durasi (menit:detik)
+            </label>
             <input
+              id="pod-dur"
               type="text"
               placeholder="28:15"
               value={newPod.duration}
               onChange={(e) => setNewPod({ ...newPod, duration: e.target.value })}
-              className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-amber-400"
+              className="cockpit-input tabular"
             />
           </div>
         </div>
 
-        <div>
-          <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Ringkasan Materi / Show Notes</label>
+        <div className="space-y-1.5">
+          <label htmlFor="pod-notes" className="block text-[13px] text-[#b4b4b4]">
+            Ringkasan materi (show notes)
+          </label>
           <textarea
+            id="pod-notes"
             rows={3}
-            placeholder="Poin-poin penting renungan atau kutipan khotbah..."
+            placeholder="Pokok-pokok khotbah untuk pendengar aplikasi dan RSS..."
             value={newPod.showNotes}
             onChange={(e) => setNewPod({ ...newPod, showNotes: e.target.value })}
-            className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-amber-400 resize-none"
+            className="cockpit-textarea resize-none"
           />
         </div>
 
-        <button
-          type="submit"
-          className="px-6 py-3 rounded-xl text-xs font-bold bg-gradient-to-r from-agape-600 to-amber-600 hover:brightness-110 text-white shadow-md transition"
-        >
-          Terbitkan Episode Podcast Sekarang &rarr;
-        </button>
+        <div className="pt-1">
+          <button type="submit" className="cockpit-btn primary">
+            Terbitkan ke Katalog &amp; RSS
+          </button>
+        </div>
       </form>
+
+      {/* Right: Live Published Episodes Table/List */}
+      <div className="lg:col-span-5 cockpit-card space-y-3">
+        <div className="flex items-baseline justify-between">
+          <h2 className="m-0 text-[16px] font-semibold text-white">Katalog tayang</h2>
+          <span className="text-[12px] text-[#949494] tabular">{podcasts.length} episode</span>
+        </div>
+
+        <div>
+          {podcasts.map((ep) => (
+            <div
+              key={ep.id}
+              className="cockpit-row py-3 flex items-baseline justify-between gap-3"
+            >
+              <div className="min-w-0">
+                <p className="m-0 text-[14px] font-medium text-white truncate">{ep.title}</p>
+                <p className="m-0 text-[12px] text-[#949494] truncate">
+                  {ep.speaker} · {ep.scripture}
+                </p>
+              </div>
+              <span className="text-[13px] text-[#b4b4b4] tabular flex-none">{ep.duration}</span>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

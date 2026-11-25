@@ -55,3 +55,6 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+
+# Design inspection artifacts
+.taste-skill/

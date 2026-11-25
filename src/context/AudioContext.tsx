@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 import { RADIO_INFO, PodcastEpisode } from "@/data/radioData";
+import { withBasePath } from "@/lib/utils";
 
 export interface ActiveTrack {
   id: string;
@@ -40,7 +41,7 @@ const DEFAULT_LIVE_TRACK: ActiveTrack = {
   title: "94.5 FM Radio Agape Semarang",
   subtitle: "Mitra Sejati Penyejuk Hati (Siaran Studio 24/7)",
   url: RADIO_INFO.liveStreamUrl,
-  coverImage: "/agapelogo.png",
+  coverImage: withBasePath("/agapelogo.png"),
 };
 
 const AudioContext = createContext<AudioContextType | undefined>(undefined);
@@ -178,7 +179,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
       title: ch.name,
       subtitle: `${RADIO_INFO.frequency} • ${ch.genre}`,
       url: ch.url,
-      coverImage: "/agapelogo.png",
+      coverImage: withBasePath("/agapelogo.png"),
     };
 
     loadAndPlayTrack(liveTrack);

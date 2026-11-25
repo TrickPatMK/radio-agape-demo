@@ -1,11 +1,10 @@
 ﻿import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+export const dynamic = "force-static";
 
 export async function GET() {
   try {
     const res = await fetch("http://radio.agapefm.com:8000/status-json.xsl", {
-      next: { revalidate: 10 },
       headers: {
         "User-Agent": "AgapeFM-WebClient/2.0",
       },

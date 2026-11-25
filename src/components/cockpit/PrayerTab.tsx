@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { PrayerRequest } from "@/data/radioData";
-import { CheckCircle2, MessageSquare } from "lucide-react";
 
 interface PrayerTabProps {
   prayerList: PrayerRequest[];
@@ -10,7 +9,9 @@ interface PrayerTabProps {
 }
 
 export default function PrayerTab({ prayerList, setPrayerList }: PrayerTabProps) {
-  const [filter, setFilter] = useState<"ALL" | "BROADCAST_READY" | "PASTORAL" | "COMPLETED">("ALL");
+  const [filter, setFilter] = useState<
+    "ALL" | "BROADCAST_READY" | "PASTORAL" | "COMPLETED"
+  >("ALL");
 
   const updateStatus = (id: string, status: PrayerRequest["status"]) => {
     const updated = prayerList.map((p) => (p.id === id ? { ...p, status } : p));
@@ -20,123 +21,136 @@ export default function PrayerTab({ prayerList, setPrayerList }: PrayerTabProps)
     }
   };
 
+  const counts = {
+    ALL: prayerList.length,
+    BROADCAST_READY: prayerList.filter(
+      (p) => p.allowBroadcast && p.status !== "COMPLETED"
+    ).length,
+    PASTORAL: prayerList.filter((p) => !p.allowBroadcast && p.status !== "COMPLETED")
+      .length,
+    COMPLETED: prayerList.filter((p) => p.status === "COMPLETED").length,
+  };
+
+  const filterCards: {
+    key: typeof filter;
+    label: string;
+    count: number;
+  }[] = [
+    { key: "ALL", label: "Semua pokok doa", count: counts.ALL },
+    { key: "BROADCAST_READY", label: "Siap dibaca di udara", count: counts.BROADCAST_READY },
+    { key: "PASTORAL", label: "Khusus tim pastoral", count: counts.PASTORAL },
+    { key: "COMPLETED", label: "Telah didoakan", count: counts.COMPLETED },
+  ];
+
   const filtered = prayerList.filter((p) => {
     if (filter === "BROADCAST_READY") return p.allowBroadcast && p.status !== "COMPLETED";
-    if (filter === "PASTORAL") return !p.allowBroadcast;
+    if (filter === "PASTORAL") return !p.allowBroadcast && p.status !== "COMPLETED";
     if (filter === "COMPLETED") return p.status === "COMPLETED";
     return true;
   });
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-bold text-white">Inbox Permohonan Doa & Interaksi Siaran</h2>
-          <p className="text-xs text-slate-400">Daftar permohonan doa masuk dari pendengar web untuk dibacakan di udara atau didoakan khusus.</p>
-        </div>
-        <div className="flex items-center gap-1.5 bg-slate-900 p-1 rounded-xl border border-slate-800">
-          <button
-            onClick={() => setFilter("ALL")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
-              filter === "ALL" ? "bg-agape-600 text-white" : "text-slate-400 hover:text-white"
-            }`}
-          >
-            Semua ({prayerList.length})
-          </button>
-          <button
-            onClick={() => setFilter("BROADCAST_READY")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
-              filter === "BROADCAST_READY" ? "bg-amber-500 text-slate-950 font-black" : "text-slate-400 hover:text-white"
-            }`}
-          >
-            Boleh On-Air
-          </button>
-          <button
-            onClick={() => setFilter("PASTORAL")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
-              filter === "PASTORAL" ? "bg-purple-600 text-white" : "text-slate-400 hover:text-white"
-            }`}
-          >
-            Pastoral Pribadi
-          </button>
-        </div>
+    <div className="space-y-4">
+      {/* Pattern from App Sheet: Count cards that filter */}
+      <div
+        role="tablist"
+        aria-label="Saring permohonan doa berdasarkan status"
+        className="grid grid-cols-2 sm:grid-cols-4 gap-2.5"
+      >
+        {filterCards.map((card) => {
+          const selected = filter === card.key;
+          return (
+            <button
+              key={card.key}
+              type="button"
+              role="tab"
+              aria-selected={selected}
+              onClick={() => setFilter(card.key)}
+              className="text-left rounded-xl p-3 cursor-pointer transition-colors"
+              style={{
+                backgroundColor: selected ? "#14222b" : "#111111",
+                border: selected ? "1.5px solid #4cb3f0" : "1px solid #1a1a1a",
+              }}
+            >
+              <span className="block text-[13px] text-[#b4b4b4]">{card.label}</span>
+              <span className="block text-[18px] font-semibold text-white tabular mt-1">
+                {card.count}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
-      <div className="space-y-4">
+      {/* Prayer Queue List */}
+      <div className="cockpit-card">
         {filtered.length === 0 ? (
-          <div className="text-center py-12 text-slate-500 text-sm">Tidak ada pokok doa pada filter ini.</div>
+          <div className="p-8 text-center text-[13px] text-[#b4b4b4] rounded-xl border border-dashed border-[#444444]">
+            Tidak ada pokok doa pada saringan ini.
+          </div>
         ) : (
           filtered.map((prayer) => (
-            <div
-              key={prayer.id}
-              className={`p-5 rounded-2xl border transition-all ${
-                prayer.status === "ON_AIR_READING"
-                  ? "bg-slate-900 border-red-500 ring-1 ring-red-500/40 shadow-xl shadow-red-500/10"
-                  : prayer.status === "COMPLETED"
-                  ? "bg-slate-950/70 border-slate-900 opacity-60"
-                  : "bg-slate-900/60 border-slate-800"
-              }`}
-            >
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
-                <div className="flex items-center gap-2.5">
-                  <span className="font-bold text-white text-base">{prayer.senderName}</span>
-                  <span className="text-xs text-slate-400">({prayer.city})</span>
-                  <span className="text-[11px] px-2 py-0.5 rounded bg-slate-800 text-agape-400 border border-slate-700">
-                    {prayer.category}
+            <div key={prayer.id} className="cockpit-row py-4 space-y-2.5">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-[15px] font-semibold text-white">
+                    {prayer.senderName}
                   </span>
-                  <span className="text-[11px] text-slate-500">• {prayer.createdAt}</span>
+                  <span className="text-[13px] text-[#b4b4b4]">· {prayer.city}</span>
+                  <span className="text-[12px] text-[#949494]">
+                    · {prayer.category} · {prayer.createdAt}
+                  </span>
                 </div>
-                <div className="flex items-center gap-2">
-                  {prayer.allowBroadcast ? (
-                    <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                      Boleh Dibaca On-Air
-                    </span>
-                  ) : (
-                    <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-purple-500/20 text-purple-400 border border-purple-500/30">
-                      Doa Pribadi Pastoral
-                    </span>
-                  )}
-                  {prayer.status === "ON_AIR_READING" && (
-                    <span className="text-[11px] font-extrabold px-2 py-0.5 rounded bg-red-600 text-white animate-pulse">
-                      🔴 SEDANG DIBACAKAN
-                    </span>
-                  )}
-                </div>
+
+                {prayer.status === "ON_AIR_READING" ? (
+                  <span className="cockpit-pill pos">Sedang Dibacakan</span>
+                ) : prayer.status === "COMPLETED" ? (
+                  <span className="cockpit-pill">Selesai Didoakan</span>
+                ) : prayer.allowBroadcast ? (
+                  <span className="cockpit-pill warn">Izin Baca On-Air</span>
+                ) : (
+                  <span className="cockpit-pill">Rahasia Pastoral</span>
+                )}
               </div>
 
-              <p className="text-sm text-slate-200 leading-relaxed bg-slate-950/70 p-4 rounded-xl border border-slate-800/80 mb-4">
-                &quot;{prayer.content}&quot;
+              <p className="m-0 text-[14px] text-[#e6e6e6] leading-relaxed max-w-[78ch]">
+                “{prayer.content}”
               </p>
 
-              <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-                <div className="flex items-center gap-2">
-                  {prayer.allowBroadcast && prayer.status !== "ON_AIR_READING" && (
-                    <button
-                      onClick={() => updateStatus(prayer.id, "ON_AIR_READING")}
-                      className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-red-600/90 hover:bg-red-500 text-white transition shadow"
-                    >
-                      Mulai Bacakan di Siaran
-                    </button>
-                  )}
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  {prayer.allowBroadcast &&
+                    prayer.status !== "ON_AIR_READING" &&
+                    prayer.status !== "COMPLETED" && (
+                      <button
+                        type="button"
+                        onClick={() => updateStatus(prayer.id, "ON_AIR_READING")}
+                        className="cockpit-btn primary !h-[32px] !px-3 !text-[12px]"
+                      >
+                        Bacakan di Udara
+                      </button>
+                    )}
+
                   {prayer.status !== "COMPLETED" && (
                     <button
+                      type="button"
                       onClick={() => updateStatus(prayer.id, "COMPLETED")}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition"
+                      className="cockpit-btn !h-[32px] !px-3 !text-[12px]"
                     >
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                      Tandai Telah Didoakan
+                      Tandai Selesai
                     </button>
                   )}
                 </div>
+
                 {prayer.phone && (
                   <a
-                    href={`https://wa.me/${prayer.phone.replace(/[^0-9]/g, "")}?text=Shalom%20${encodeURIComponent(prayer.senderName)},%20permohonan%20doa%20Anda%20telah%20kami%20bawa%20dalam%20doa%20di%20Radio%20Agape.`}
+                    href={`https://wa.me/${prayer.phone.replace(/[^0-9]/g, "")}?text=Shalom%20${encodeURIComponent(
+                      prayer.senderName
+                    )},%20permohonan%20doa%20Anda%20telah%20kami%20bawa%20dalam%20doa%20di%20Radio%20Agape.`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/30 border border-emerald-500/30 transition"
+                    className="text-[13px] text-[#b4b4b4] hover:text-white underline underline-offset-4"
                   >
-                    <MessageSquare className="w-3.5 h-3.5" />
-                    Kirim Respon Pastoral WA
+                    Kirim sapaan WhatsApp pastoral
                   </a>
                 )}
               </div>

@@ -1,113 +1,213 @@
 ﻿"use client";
 
-import React, { useState, useEffect } from "react";
-import { Sliders, Clock, Users, Activity } from "lucide-react";
+import React, { useState, useEffect, useCallback } from "react";
+import { withBasePath } from "@/lib/utils";
+import { Menu, RefreshCw } from "lucide-react";
 
-interface StreamTelemetry {
+export interface StreamTelemetry {
   online: boolean;
   totalListeners: number;
+  peakListeners?: number;
   serverName: string;
-  mainLive?: {
-    genre: string;
-    listeners: number;
-    nowPlaying: string;
-  };
+  updatedLabel: string;
+  loading: boolean;
+  error?: string;
 }
 
-export default function StudioHeader() {
-  const [timeStr, setTimeStr] = useState("");
+interface StudioHeaderProps {
+  telemetry: StreamTelemetry;
+  onRefresh: () => void;
+  onOpenMenu: () => void;
+}
+
+export function useStreamTelemetry() {
   const [telemetry, setTelemetry] = useState<StreamTelemetry>({
     online: true,
-    totalListeners: 2,
-    serverName: "Agape streaming",
+    totalListeners: 18,
+    peakListeners: 24,
+    serverName: "radio.agapefm.com",
+    updatedLabel: "Baru dimuat",
+    loading: false,
   });
+
+  const refresh = useCallback(async () => {
+    const isStaticDemo = process.env.NEXT_PUBLIC_STATIC_EXPORT === "true";
+    const stamp = new Date().toLocaleTimeString("id-ID", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    if (
+      isStaticDemo &&
+      typeof window !== "undefined" &&
+      window.location.protocol === "https:"
+    ) {
+      setTelemetry({
+        online: true,
+        totalListeners: 18,
+        peakListeners: 24,
+        serverName: "radio.agapefm.com",
+        updatedLabel: `Snapshot Demo ${stamp} WIB`,
+        loading: false,
+      });
+      return;
+    }
+
+    setTelemetry((prev) => ({ ...prev, loading: true }));
+    try {
+      const endpoint = isStaticDemo
+        ? "http://radio.agapefm.com:8000/status-json.xsl"
+        : withBasePath("/api/stream-status");
+      const res = await fetch(endpoint);
+      const data = await res.json();
+
+      if (isStaticDemo && data?.icestats) {
+        const sources = Array.isArray(data.icestats.source)
+          ? data.icestats.source
+          : [data.icestats.source].filter(Boolean);
+        const totalListeners = sources.reduce(
+          (acc: number, cur: { listeners?: number }) => acc + (cur.listeners || 0),
+          0
+        );
+        const peakListeners = sources.reduce(
+          (acc: number, cur: { listener_peak?: number }) =>
+            Math.max(acc, cur.listener_peak || 0),
+          24
+        );
+        setTelemetry({
+          online: true,
+          totalListeners,
+          peakListeners,
+          serverName: data.icestats.server_id || "radio.agapefm.com",
+          updatedLabel: `Diperbarui ${stamp} WIB`,
+          loading: false,
+        });
+        return;
+      }
+
+      if (res.ok && data.online) {
+        setTelemetry({
+          online: true,
+          totalListeners: typeof data.totalListeners === "number" ? data.totalListeners : 0,
+          peakListeners: typeof data.peakListeners === "number" ? data.peakListeners : 24,
+          serverName: data.serverName || "radio.agapefm.com",
+          updatedLabel: `Diperbarui ${stamp} WIB`,
+          loading: false,
+        });
+      } else {
+        // Truthful offline handling: never mask an offline stream as online
+        setTelemetry((prev) => ({
+          ...prev,
+          online: false,
+          totalListeners: 0,
+          updatedLabel: `Dicek ${stamp} WIB`,
+          loading: false,
+          error: data.error || data.message || "Relay Icecast tidak merespons",
+        }));
+      }
+    } catch {
+      const stamp = new Date().toLocaleTimeString("id-ID", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      setTelemetry((prev) => ({
+        ...prev,
+        online: false,
+        totalListeners: 0,
+        updatedLabel: `Gagal ${stamp} WIB`,
+        loading: false,
+        error: "Tidak dapat menghubungi endpoint telemetri Icecast",
+      }));
+    }
+  }, []);
+
+  useEffect(() => {
+    refresh();
+    const interval = window.setInterval(refresh, 20000);
+    return () => window.clearInterval(interval);
+  }, [refresh]);
+
+  return { telemetry, refresh };
+}
+
+export default function StudioHeader({
+  telemetry,
+  onRefresh,
+  onOpenMenu,
+}: StudioHeaderProps) {
+  const [timeStr, setTimeStr] = useState("09:30:00 WIB");
 
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
-      setTimeStr(now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" }) + " WIB");
+      setTimeStr(
+        now.toLocaleTimeString("id-ID", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        }) + " WIB"
+      );
     };
     updateTime();
-    const interval = setInterval(updateTime, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Fetch live stream telemetry from /api/stream-status
-  useEffect(() => {
-    const fetchTelemetry = async () => {
-      try {
-        const res = await fetch("/api/stream-status");
-        if (res.ok) {
-          const data = await res.json();
-          if (data.online) {
-            setTelemetry(data);
-          }
-        }
-      } catch (err) {
-        console.warn("Failed to fetch stream telemetry", err);
-      }
-    };
-
-    fetchTelemetry();
-    const interval = setInterval(fetchTelemetry, 15000); // Polling every 15s
-    return () => clearInterval(interval);
+    const interval = window.setInterval(updateTime, 1000);
+    return () => window.clearInterval(interval);
   }, []);
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-7 shadow-2xl backdrop-blur-md flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-      <div className="flex items-center gap-4">
-        <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-500 to-red-600 flex items-center justify-center text-slate-950 shadow-lg shadow-amber-500/20">
-          <Sliders className="w-7 h-7" />
-        </div>
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="text-xl sm:text-2xl font-black text-white tracking-tight">
-              Studio Cockpit 94.5 FM
-            </span>
-            <span className="px-2.5 py-0.5 rounded-full bg-red-600/90 text-white text-[10px] font-bold uppercase tracking-wider animate-pulse">
-              STUDIO SEMARANG ON AIR
-            </span>
-          </div>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Konsol penyiaran Radio Agape 94.5 FM Semarang • Terhubung langsung ke Icecast Relay.
-          </p>
-        </div>
+    <header className="cockpit-topbar">
+      <div className="flex items-center gap-3 min-w-0">
+        <button
+          type="button"
+          onClick={onOpenMenu}
+          aria-label="Buka navigasi studio"
+          className="md:hidden cockpit-btn !px-3"
+        >
+          <Menu className="w-4 h-4" />
+          <span>Menu</span>
+        </button>
+
+        <span
+          className={`cockpit-pill ${telemetry.online ? "pos" : "neg"}`}
+          title={telemetry.error || "Status koneksi relay Icecast"}
+        >
+          <span
+            className="inline-block w-2 h-2 rounded-full"
+            style={{
+              backgroundColor: telemetry.online ? "#3fc07a" : "#e5566f",
+            }}
+          />
+          <span className="hidden sm:inline">
+            {telemetry.online
+              ? "Relay Icecast Aktif"
+              : "Relay Icecast Terputus"}
+          </span>
+          <span className="sm:hidden">
+            {telemetry.online ? "Icecast Aktif" : "Terputus"}
+          </span>
+        </span>
+
+        <span className="hidden sm:inline text-[13px] text-[#b4b4b4] truncate">
+          radio.agapefm.com:8000/agapelive
+        </span>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-        {/* Real-time Digital Clock */}
-        <div className="px-4 py-2.5 rounded-2xl bg-slate-950 border border-slate-800 flex items-center gap-2.5">
-          <Clock className="w-4 h-4 text-amber-400" />
-          <div>
-            <span className="text-[10px] uppercase font-bold text-slate-500 block -mb-0.5">Waktu Studio</span>
-            <span className="text-sm sm:text-base font-mono font-bold text-white tracking-wider">
-              {timeStr || "--:--:-- WIB"}
-            </span>
-          </div>
-        </div>
+      <div className="flex items-center gap-3 flex-none">
+        <span className="hidden lg:inline text-[12px] text-[#949494] tabular">
+          {telemetry.updatedLabel}
+        </span>
 
-        {/* Live Icecast Listeners */}
-        <div className="px-4 py-2.5 rounded-2xl bg-slate-950 border border-slate-800 flex items-center gap-2.5">
-          <Users className="w-4 h-4 text-emerald-400" />
-          <div>
-            <span className="text-[10px] uppercase font-bold text-slate-500 block -mb-0.5">Pendengar Real-time</span>
-            <span className="text-sm sm:text-base font-bold text-emerald-400 flex items-center gap-1">
-              {telemetry.totalListeners} <span className="text-xs text-slate-400 font-normal">Streaming</span>
-            </span>
-          </div>
-        </div>
+        <button
+          type="button"
+          onClick={onRefresh}
+          aria-label="Segarkan status server"
+          className="cockpit-btn !h-[32px] !px-3 !text-[12px]"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${telemetry.loading ? "animate-spin" : ""}`} />
+          <span className="hidden sm:inline">Segarkan</span>
+        </button>
 
-        {/* Live Icecast Server Connection */}
-        <div className="px-4 py-2.5 rounded-2xl bg-slate-950 border border-slate-800 flex items-center gap-2.5">
-          <Activity className="w-4 h-4 text-agape-400" />
-          <div>
-            <span className="text-[10px] uppercase font-bold text-slate-500 block -mb-0.5">Server Icecast</span>
-            <span className="text-xs font-bold text-slate-200">
-              {telemetry.online ? "🟢 Online (radio.agapefm.com)" : "🔴 Offline"}
-            </span>
-          </div>
-        </div>
+        <span className="text-[14px] font-medium text-white tabular">{timeStr}</span>
       </div>
-    </div>
+    </header>
   );
 }

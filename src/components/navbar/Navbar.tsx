@@ -2,165 +2,162 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useAudio } from "@/context/AudioContext";
-import { 
-  Radio, 
-  Calendar, 
-  Headphones, 
-  HeartHandshake, 
-  Sliders, 
-  Menu, 
-  X,
-  Volume2
-} from "lucide-react";
+import { Play, Pause, Menu, X, Loader2 } from "lucide-react";
 
 export default function Navbar() {
   const pathname = usePathname();
-  const { isPlaying, isLive, playLive } = useAudio();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { currentTrack, isPlaying, isLive, isLoading, togglePlay, playLive } = useAudio();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const navLinks = [
-    { href: "/", label: "Beranda", icon: Radio },
-    { href: "/jadwal", label: "Jadwal Siaran", icon: Calendar },
-    { href: "/podcast", label: "Podcast", icon: Headphones },
-    { href: "/doa", label: "Permohonan Doa", icon: HeartHandshake },
-    { href: "/donasi", label: "Dukungan Kasih", icon: HeartHandshake },
+    { href: "/", label: "Beranda" },
+    { href: "/jadwal", label: "Jadwal" },
+    { href: "/podcast", label: "Podcast" },
+    { href: "/doa", label: "Doa" },
+    { href: "/donasi", label: "Dukungan" },
   ];
 
+  const handlePrimaryPlay = () => {
+    if (isPlaying) {
+      togglePlay();
+    } else if (isLive) {
+      playLive();
+    } else {
+      togglePlay();
+    }
+  };
+
   return (
-    <header className="sticky top-0 z-40 bg-slate-900/95 text-white backdrop-blur-md border-b border-slate-800 shadow-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 sm:h-20">
-          {/* Brand Logo with Official Agape FM Image */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden bg-white/10 p-1 flex items-center justify-center border border-slate-700/60 shadow group-hover:scale-105 transition-transform">
-              <Image 
-                src="/agapelogo.png" 
-                alt="Logo Radio Agape 94.5 FM Semarang" 
-                width={56} 
-                height={56} 
-                className="object-contain w-full h-full"
-                priority
-              />
-            </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-lg sm:text-xl font-black tracking-tight text-white">
-                  94.5 FM <span className="text-amber-400">AGAPE</span>
-                </span>
-                <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                  SEMARANG
-                </span>
-              </div>
-              <span className="text-[11px] font-medium tracking-wide text-slate-300 block -mt-0.5">
-                Mitra Sejati Penyejuk Hati
-              </span>
-            </div>
-          </Link>
+    <header className="sticky top-0 z-40 bg-paper text-paper-ink">
+      <div className="px-[var(--margin)] h-[4.25rem] flex items-center justify-between gap-3">
+        {/* Crisp Broadcast Mark & Wordmark */}
+        <Link
+          href="/"
+          className="flex items-center gap-2.5 text-paper-ink no-underline flex-none"
+          aria-label="Radio Agape 94.5 FM Semarang Beranda"
+        >
+          <svg
+            width="28"
+            height="28"
+            viewBox="0 0 28 28"
+            aria-hidden="true"
+            className="flex-none"
+          >
+            <rect width="28" height="28" fill="#241f1c" />
+            <circle cx="14" cy="14" r="8.5" fill="none" stroke="#ebe5e3" strokeWidth="1.8" />
+            <circle cx="14" cy="14" r="3" fill="#085830" />
+          </svg>
+          <span className="type-body font-semibold tracking-[-0.015em] text-paper-ink tabular whitespace-nowrap">
+            Agape 94.5 FM
+          </span>
+        </Link>
 
-          {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-1 lg:gap-2">
-            {navLinks.map((link) => {
-              const isActive = pathname === link.href;
-              const Icon = link.icon;
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    isActive
-                      ? "bg-agape-600 text-white shadow-sm"
-                      : "text-slate-300 hover:text-white hover:bg-slate-800"
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  {link.label}
-                </Link>
-              );
-            })}
-          </nav>
-
-          {/* Right Action Buttons */}
-          <div className="hidden sm:flex items-center gap-3">
-            <button
-              onClick={() => playLive()}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs sm:text-sm font-bold tracking-wide transition shadow-lg ${
-                isLive && isPlaying
-                  ? "bg-red-600 text-white shadow-red-600/40 animate-pulse"
-                  : "bg-gradient-to-r from-red-600 to-amber-600 text-white hover:brightness-110"
-              }`}
-            >
-              <Volume2 className="w-4 h-4" />
-              {isLive && isPlaying ? "ON AIR PLAYING" : "PUTAR SIARAN 94.5 FM"}
-            </button>
-
-            <Link
-              href="/cockpit"
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold border transition ${
-                pathname === "/cockpit"
-                  ? "bg-amber-500 text-slate-950 border-amber-400 font-bold"
-                  : "bg-slate-800/80 text-amber-300 border-amber-500/30 hover:bg-amber-500/10 hover:border-amber-400"
-              }`}
-              title="Studio Cockpit & Kontrol Siaran"
-            >
-              <Sliders className="w-4 h-4 text-amber-400" />
-              <span>Studio Cockpit</span>
-            </Link>
-          </div>
-
-          {/* Mobile Menu Button */}
-          <div className="flex sm:hidden items-center gap-2">
-            <button
-              onClick={() => playLive()}
-              className="p-2 rounded-full bg-red-600 text-white shadow-md text-xs font-bold flex items-center"
-              aria-label="Putar Live"
-            >
-              <Volume2 className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2 text-slate-300 hover:text-white rounded-lg hover:bg-slate-800"
-              aria-label="Toggle menu"
-            >
-              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile Drawer Menu */}
-      {isMobileMenuOpen && (
-        <div className="sm:hidden bg-slate-900 border-b border-slate-800 px-4 pt-2 pb-6 space-y-2">
+        {/* Plain Text Navigation on Desktop (1024px+) */}
+        <nav aria-label="Menu utama" className="hidden lg:flex items-center gap-7">
           {navLinks.map((link) => {
-            const isActive = pathname === link.href;
-            const Icon = link.icon;
+            const active = pathname === link.href;
             return (
               <Link
                 key={link.href}
                 href={link.href}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium ${
-                  isActive
-                    ? "bg-agape-600 text-white"
-                    : "text-slate-300 hover:text-white hover:bg-slate-800"
+                aria-current={active ? "page" : undefined}
+                className={`type-body no-underline transition-colors ${
+                  active
+                    ? "text-paper-accent font-semibold underline underline-offset-[6px]"
+                    : "text-paper-ink hover:text-paper-accent font-normal"
                 }`}
               >
-                <Icon className="w-5 h-5 text-amber-400" />
                 {link.label}
               </Link>
             );
           })}
-          <div className="pt-2 border-t border-slate-800">
+          <Link
+            href="/cockpit"
+            className="type-small text-paper-muted hover:text-paper-ink no-underline"
+          >
+            Studio Cockpit
+          </Link>
+        </nav>
+
+        {/* Single Primary Action + Mobile Sheet Trigger */}
+        <div className="flex items-center gap-2 flex-none">
+          <button
+            type="button"
+            onClick={handlePrimaryPlay}
+            className="btn-flat !min-h-[40px] !py-2 !px-3.5 !text-[14px]"
+          >
+            {isLoading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : isPlaying ? (
+              <Pause className="w-4 h-4 fill-current" />
+            ) : (
+              <Play className="w-4 h-4 fill-current" />
+            )}
+            <span className="hidden sm:inline tabular">
+              {isPlaying
+                ? isLive
+                  ? "Jeda 94.5 FM"
+                  : "Jeda Rekaman"
+                : "Putar 94.5 FM"}
+            </span>
+            <span className="sm:hidden tabular">
+              {isPlaying ? "Jeda" : "Putar"}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-expanded={menuOpen}
+            aria-label={menuOpen ? "Tutup menu navigasi" : "Buka menu navigasi"}
+            className="lg:hidden min-h-[40px] px-3 bg-paper-surface text-paper-ink border-0 cursor-pointer flex items-center gap-1.5 type-small font-medium"
+          >
+            {menuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            <span>Menu</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Full-Screen Menu Sheet for Tablet & Phone */}
+      {menuOpen && (
+        <div
+          role="dialog"
+          aria-label="Menu navigasi situs"
+          className="lg:hidden fixed inset-0 top-[4.25rem] z-50 bg-paper px-[var(--margin)] py-8 flex flex-col justify-between overflow-y-auto"
+        >
+          <nav className="flex flex-col gap-5">
+            {navLinks.map((link) => {
+              const active = pathname === link.href;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMenuOpen(false)}
+                  className={`type-head no-underline ${
+                    active ? "text-paper-accent" : "text-paper-ink"
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
             <Link
               href="/cockpit"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg text-sm font-bold bg-amber-500 text-slate-950 shadow-md"
+              onClick={() => setMenuOpen(false)}
+              className="type-lead text-paper-muted no-underline pt-2"
             >
-              <Sliders className="w-4 h-4" />
-              Buka Studio Cockpit (CMS)
+              Buka Studio Cockpit
             </Link>
+          </nav>
+
+          <div className="bg-paper-surface p-5 space-y-2">
+            <p className="m-0 type-small text-paper-muted">Sedang siap diputar:</p>
+            <p className="m-0 type-body font-semibold text-paper-ink">{currentTrack.title}</p>
+            <p className="m-0 type-small text-paper-muted">
+              Jl. Pringgading 13, Semarang 50135
+            </p>
           </div>
         </div>
       )}

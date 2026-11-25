@@ -1,379 +1,498 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { useAudio } from "@/context/AudioContext";
 import { RADIO_INFO, MOCK_SCHEDULE, MOCK_PODCASTS } from "@/data/radioData";
-import { 
-  Play, 
-  Pause, 
-  Radio, 
-  Calendar, 
-  Headphones, 
-  HeartHandshake, 
-  Clock, 
-  ChevronRight,
-  Share2,
-  Sparkles,
-  PhoneCall
-} from "lucide-react";
+import { withBasePath } from "@/lib/utils";
+import SplitStage from "@/components/stage/SplitStage";
+import { Play, Pause, Plus } from "lucide-react";
 
 export default function HomePage() {
-  const { isPlaying, isLive, togglePlay, playLive, playPodcast } = useAudio();
+  const { currentTrack, isPlaying, isLive, playLive, playPodcast, togglePlay } = useAudio();
+  const [selectedPodIdx, setSelectedPodIdx] = useState(0);
 
-  // Current program sample
-  const currentProgram = MOCK_SCHEDULE[2]; // Bincang Keluarga Bahtera Kasih (09:00 - 11:00)
-  const nextProgram = MOCK_SCHEDULE[3]; // Pujian di Tengah Hari (11:00 - 13:00)
+  const currentProgram = MOCK_SCHEDULE[2]; // 09:00–11:00 Bincang Keluarga Bahtera Kasih
+  const nextProgram = MOCK_SCHEDULE[3]; // 11:00–13:00 Alunan Pujian di Tengah Hari
+  const activePod = MOCK_PODCASTS[selectedPodIdx] || MOCK_PODCASTS[0];
+  const isPodPlaying = currentTrack.id === activePod.id && isPlaying;
+
+  const scheduleGroups = [
+    {
+      id: "grp-fajar",
+      label: "Fajar & Saat Teduh",
+      span: "05:00–09:00 WIB",
+      items: MOCK_SCHEDULE.slice(0, 2),
+      defaultOpen: false,
+    },
+    {
+      id: "grp-pagi",
+      label: "Sedang Mengudara · Keluarga",
+      span: "09:00–11:00 WIB",
+      items: [MOCK_SCHEDULE[2]],
+      defaultOpen: true,
+    },
+    {
+      id: "grp-siang",
+      label: "Pujian Tengah Hari",
+      span: "11:00–13:00 WIB",
+      items: [MOCK_SCHEDULE[3]],
+      defaultOpen: false,
+    },
+    {
+      id: "grp-syafaat",
+      label: "Ruang Syafaat & Doa Kota",
+      span: "13:00–15:00 WIB",
+      items: [MOCK_SCHEDULE[4]],
+      defaultOpen: false,
+    },
+    {
+      id: "grp-sore",
+      label: "Sore & Perjalanan Pulang",
+      span: "15:00–19:00 WIB",
+      items: MOCK_SCHEDULE.slice(5, 7),
+      defaultOpen: false,
+    },
+    {
+      id: "grp-malam",
+      label: "Mimbar Firman & Malam Teduh",
+      span: "19:00–00:00 WIB",
+      items: MOCK_SCHEDULE.slice(7, 9),
+      defaultOpen: false,
+    },
+  ];
 
   return (
-    <div className="space-y-16 pb-12">
-      {/* 1. HERO SECTION */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-slate-900 via-slate-900/90 to-slate-950 pt-10 pb-16 lg:pt-16 lg:pb-24 border-b border-slate-800/80">
-        {/* Decorative Background Glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-agape-500/10 blur-[120px] pointer-events-none rounded-full" />
-        <div className="absolute top-20 right-10 w-72 h-72 bg-amber-500/10 blur-[100px] pointer-events-none rounded-full" />
-
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-            {/* Left Hero Content */}
-            <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-800/90 border border-slate-700/80 text-xs font-semibold text-slate-300 shadow-sm">
-                <span className="flex h-2 w-2 relative">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+    <div>
+      {/* 1. THE SPLIT STAGE: Left Reading Sheet + Sticky Right Semarang Broadcast Stage */}
+      <section className="px-[var(--margin)] pb-20 lg:pb-28">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-[var(--gutter)] gap-y-10 items-start">
+          {/* Block 1: Hero Introduction (First on phone & tablet, top-left on desktop) */}
+          <div className="lg:col-span-6 lg:col-start-1 pt-5 lg:pt-12 lg:pr-10 space-y-6 max-w-[46ch]">
+            <h1 className="type-display lines m-0 text-paper-ink">
+              <span className="line">
+                <span data-line style={{ ["--i" as string]: 0 }}>
+                  Siaran 24 jam
                 </span>
-                <span className="text-red-400 font-bold uppercase tracking-wider">Live Streaming 24/7</span>
-                <span className="text-slate-500">•</span>
-                <span className="text-amber-300 font-medium">Stasiun Penyiaran Kasih</span>
+              </span>
+              <span className="line">
+                <span data-line style={{ ["--i" as string]: 1 }}>
+                  dari Semarang
+                </span>
+              </span>
+            </h1>
+
+            <p
+              data-load
+              style={{ ["--d" as string]: "140ms" }}
+              className="type-body m-0 text-paper-ink max-w-[42ch]"
+            >
+              Radio Agape 94.5 FM menyiarkan pujian penyembahan, pembacaan Alkitab nonstop, dan
+              bincang keluarga dari Jl. Pringgading 13 tanpa terputus saat Anda berpindah halaman.
+            </p>
+
+            <div
+              data-load
+              style={{ ["--d" as string]: "220ms" }}
+              className="flex flex-wrap items-center gap-5 pt-1"
+            >
+              <button
+                type="button"
+                onClick={() => (isLive && isPlaying ? togglePlay() : playLive("main"))}
+                className="btn-flat"
+              >
+                {isLive && isPlaying ? (
+                  <>
+                    <Pause className="w-4 h-4 fill-current" />
+                    <span>Jeda Siaran 94.5 FM</span>
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-4 h-4 fill-current" />
+                    <span>Dengarkan Siaran Langsung</span>
+                  </>
+                )}
+              </button>
+
+              <Link href="/doa" className="text-action type-body">
+                Titipkan pokok doa
+              </Link>
+            </div>
+
+            {/* Current On-Air Program Fact Sheet */}
+            <div
+              data-load
+              style={{ ["--d" as string]: "280ms" }}
+              className="bg-paper-surface p-6 space-y-2.5"
+            >
+              <div className="flex flex-wrap items-baseline justify-between gap-2 type-small text-paper-muted tabular">
+                <span className="font-semibold text-paper-accent">
+                  Mengudara sekarang · 94.5 MHz
+                </span>
+                <span>
+                  {currentProgram.startTime}–{currentProgram.endTime} WIB
+                </span>
               </div>
-
-              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.15]">
-                Menyapa Hati dengan <br />
-                <span className="bg-gradient-to-r from-amber-400 via-agape-300 to-amber-200 bg-clip-text text-transparent">
-                  Kasih & Pengharapan
-                </span>
-              </h1>
-
-              <p className="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-normal">
-                Dengarkan pujian penyembahan, firman yang menguatkan, dan bincang rohani inspiratif kapan pun dan di mana pun. Audio tetap berputar lancar tanpa putus saat Anda menjelajahi website.
+              <p className="m-0 type-lead text-paper-ink">{currentProgram.title}</p>
+              <p className="m-0 type-body text-paper-ink">
+                Bersama {currentProgram.host}. Berikutnya pukul {nextProgram.startTime} WIB:{" "}
+                {nextProgram.title}.
               </p>
-
-              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-2">
-                <button
-                  onClick={() => playLive()}
-                  className="inline-flex items-center gap-3 px-6 py-3.5 rounded-full text-base font-bold bg-gradient-to-r from-agape-600 to-amber-600 text-white shadow-xl shadow-agape-600/30 hover:scale-105 active:scale-95 transition-all"
+              <div className="pt-1">
+                <a
+                  href={RADIO_INFO.whatsappBroadcast}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-action type-small"
                 >
-                  {isLive && isPlaying ? (
-                    <>
-                      <Pause className="w-5 h-5 fill-white" />
-                      Jeda Siaran Langsung
-                    </>
-                  ) : (
-                    <>
-                      <Play className="w-5 h-5 fill-white" />
-                      Dengarkan Siaran Langsung
-                    </>
-                  )}
-                </button>
+                  Kirim salam atau request lagu lewat WhatsApp Studio
+                </a>
+              </div>
+            </div>
+          </div>
 
-                <Link
-                  href="/podcast"
-                  className="inline-flex items-center gap-2 px-5 py-3.5 rounded-full text-sm font-semibold bg-slate-800/90 text-slate-200 hover:text-white hover:bg-slate-700 border border-slate-700 transition shadow-sm"
+          {/* Block 2: Semarang Stage & 5-Channel Tuner (Second on phone, Sticky Right Half on Desktop) */}
+          <div className="lg:col-span-6 lg:col-start-7 lg:row-start-1 lg:row-span-2 self-stretch">
+            <SplitStage initialSlide={0} />
+          </div>
+
+          {/* Block 3 (list blueprint): Schedule Accordion Bars Scrolling Down Left Sheet */}
+          <div className="lg:col-span-6 lg:col-start-1 pt-6 lg:pt-14 lg:pr-10 space-y-6 max-w-[54ch]">
+            <h2 data-reveal className="type-display m-0 text-paper-ink">
+              Jadwal
+            </h2>
+
+            <p
+              data-reveal
+              style={{ ["--delay" as string]: "55ms" }}
+              className="type-body m-0 text-paper-ink max-w-[44ch]"
+            >
+              Rangkaian mata acara hari ini dari doa fajar pukul lima pagi hingga pembacaan Mazmur
+              tengah malam.
+            </p>
+
+            <div className="space-y-1.5 pt-1">
+              {scheduleGroups.map((grp, idx) => (
+                <details
+                  key={grp.id}
+                  open={grp.defaultOpen}
+                  data-reveal
+                  style={{ ["--delay" as string]: `${Math.min((idx + 1) * 45, 220)}ms` }}
+                  className="schedule-bar bg-paper-surface"
                 >
-                  <Headphones className="w-4 h-4 text-amber-400" />
-                  Jelajahi Podcast
+                  <summary className="min-h-[56px] px-5 py-3.5 flex items-center justify-between gap-4 text-paper-ink select-none">
+                    <span className="font-medium type-body">{grp.label}</span>
+                    <span className="flex items-center gap-3 flex-none">
+                      <span className="type-small text-paper-muted tabular">{grp.span}</span>
+                      <Plus className="w-4 h-4 text-paper-ink bar-plus" />
+                    </span>
+                  </summary>
+
+                  <div className="px-5 pb-5 pt-1 space-y-4">
+                    {grp.items.map((item) => (
+                      <div key={item.id} className="space-y-1.5">
+                        <div className="flex items-baseline justify-between gap-4">
+                          <span className="font-semibold type-body text-paper-ink">
+                            {item.title}
+                          </span>
+                          <span className="type-small text-paper-muted tabular flex-none">
+                            {item.startTime}–{item.endTime}
+                          </span>
+                        </div>
+                        <p className="m-0 type-small text-paper-muted">Penyiar: {item.host}</p>
+                        <p className="m-0 type-body text-paper-ink">{item.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                </details>
+              ))}
+            </div>
+
+            <div data-reveal className="pt-2">
+              <Link href="/jadwal" className="text-action type-body">
+                Lihat susunan jadwal 7 hari penuh
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 2. SHOWCASE (Square plate, spare text — breaks the split to span full width) */}
+      <section className="bg-paper-surface px-[var(--margin)] py-20 lg:py-28">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-[var(--gutter)] items-stretch min-h-[78svh]">
+          {/* Left Half: Square Receiver Plate with Broadcast Disc Motif + Muted Wave Loop */}
+          <div className="lg:col-span-6 flex flex-col justify-between gap-6 lg:pr-8">
+            <div className="relative aspect-square w-full max-w-[560px] bg-paper-ink overflow-clip shutter">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={withBasePath("/media/vacuum-tube-radio-receiver-philips-680a-img.jpg")}
+                width={1920}
+                height={1371}
+                alt="Pesawat penerima radio tabung klasik dengan kain pengeras suara dan kaca penunjuk gelombang kota"
+                loading="lazy"
+                decoding="async"
+                className="plate-photo"
+              />
+              {/* Flat graphic ring motif representing tuning disc & audio reel */}
+              <svg
+                viewBox="0 0 200 200"
+                aria-hidden="true"
+                className="absolute inset-0 w-[82%] h-[82%] m-auto pointer-events-none"
+              >
+                <circle
+                  cx="100"
+                  cy="100"
+                  r="86"
+                  fill="none"
+                  stroke="#ebe5e3"
+                  strokeWidth="4"
+                  opacity="0.72"
+                />
+                <circle cx="100" cy="100" r="8" fill="#ebe5e3" opacity="0.85" />
+              </svg>
+            </div>
+
+            {/* Muted Acoustic Wave Video Strip */}
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center max-w-[560px]">
+              <div className="sm:col-span-5 aspect-video bg-paper-ink overflow-clip">
+                <video
+                  data-loop-video
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  preload="metadata"
+                  poster={withBasePath("/media/tuning-fork-creates-waves-in-water-poster.jpg")}
+                  width={854}
+                  height={480}
+                  aria-hidden="true"
+                  className="plate-photo"
+                >
+                  <source
+                    src={withBasePath("/media/tuning-fork-creates-waves-in-water.webm")}
+                    type="video/webm"
+                  />
+                </video>
+              </div>
+              <p className="sm:col-span-7 m-0 type-body text-paper-ink">
+                Rekaman khotbah direkam langsung dari meja operator Semarang dan disindikasikan ke
+                RSS podcast.
+              </p>
+            </div>
+          </div>
+
+          {/* Right Half: Flex Column Space-Between */}
+          <div className="lg:col-span-6 flex flex-col justify-between gap-10 lg:pl-6 py-2">
+            {/* Plain text episode selector tabs */}
+            <div className="space-y-5" data-reveal>
+              <h2 className="type-head m-0 text-paper-ink">Rekaman khotbah</h2>
+              <div
+                role="tablist"
+                aria-label="Pilih seri rekaman khotbah"
+                className="flex flex-wrap items-center gap-x-6 gap-y-2"
+              >
+                {MOCK_PODCASTS.map((pod, idx) => {
+                  const selected = idx === selectedPodIdx;
+                  return (
+                    <button
+                      key={pod.id}
+                      type="button"
+                      role="tab"
+                      aria-selected={selected}
+                      onClick={() => setSelectedPodIdx(idx)}
+                      className={`p-0 bg-transparent border-0 cursor-pointer type-body transition-colors ${
+                        selected
+                          ? "text-paper-ink font-semibold underline underline-offset-[6px]"
+                          : "text-paper-muted hover:text-paper-ink font-normal"
+                      }`}
+                    >
+                      {pod.shortTab}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Selected Episode Details */}
+            <div
+              className="space-y-4 max-w-[42ch]"
+              data-reveal
+              style={{ ["--delay" as string]: "65ms" }}
+            >
+              <p className="m-0 type-small text-paper-muted tabular">
+                {activePod.series} · {activePod.duration} · {activePod.scripture}
+              </p>
+              <p className="m-0 type-lead font-semibold text-paper-ink">{activePod.title}</p>
+              <p className="m-0 type-small font-medium text-paper-ink">
+                Pembicara: {activePod.speaker} ({activePod.publishedDate})
+              </p>
+              <p className="m-0 type-body text-paper-ink">{activePod.showNotes}</p>
+            </div>
+
+            {/* Two Filled Rectangular Action Cells Side by Side */}
+            <div
+              data-reveal
+              style={{ ["--delay" as string]: "120ms" }}
+              className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-[520px]"
+            >
+              <button
+                type="button"
+                onClick={() => (isPodPlaying ? togglePlay() : playPodcast(activePod))}
+                className="min-h-[60px] px-6 bg-paper-ink text-[#ebe5e3] hover:bg-paper-accent border-0 cursor-pointer flex items-center justify-between type-body font-medium transition-colors"
+              >
+                <span>{isPodPlaying ? "Jeda Episode Ini" : "Putar Episode Ini"}</span>
+                {isPodPlaying ? (
+                  <Pause className="w-4 h-4 fill-current" />
+                ) : (
+                  <Play className="w-4 h-4 fill-current" />
+                )}
+              </button>
+
+              <Link
+                href="/podcast"
+                className="min-h-[60px] px-6 bg-paper text-paper-ink hover:bg-paper-strong no-underline flex items-center justify-between type-body font-medium transition-colors"
+              >
+                <span>Semua 4 Rekaman</span>
+                <span aria-hidden="true">&rarr;</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 3. ABOUT (Pastoral letter paired with Kota Lama Semarang portrait so both sides hold weight) */}
+      <section className="px-[var(--margin)] py-24 lg:py-32 bg-paper">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-[var(--gutter)] items-center">
+          <div className="lg:col-span-6 lg:pr-12 space-y-6 max-w-[52ch]">
+            <h2 data-reveal className="type-head m-0 text-paper-ink">
+              Surat ruang siaran
+            </h2>
+
+            <p
+              data-reveal
+              style={{ ["--delay" as string]: "55ms" }}
+              className="type-body m-0 text-paper-ink"
+            >
+              Setiap pagi sebelum pukul lima, lampu ruang operator di Jl. Pringgading 13 dinyalakan
+              agar suara doa dan pembacaan firman dapat menemani rumah-rumah yang mulai terbangun di
+              Semarang.
+            </p>
+
+            <p
+              data-reveal
+              style={{ ["--delay" as string]: "100ms" }}
+              className="type-body m-0 text-paper-ink"
+            >
+              Banyak pendengar menyalakan radio sambil menyiapkan sarapan, menjaga toko, atau
+              menemani orang tua yang beristirahat di rumah. Karena itu kami menyediakan{" "}
+              <span className="bg-paper-surface px-1.5 py-0.5 font-medium">
+                lima saluran siaran serentak
+              </span>
+              , mulai dari siaran studio langsung 94.5 MHz hingga pembacaan Alkitab suara sepanjang
+              24 jam penuh.
+            </p>
+
+            <p
+              data-reveal
+              style={{ ["--delay" as string]: "145ms" }}
+              className="type-body m-0 text-paper-ink"
+            >
+              Bila hari ini hati Anda sedang berat, Anda tidak perlu memikulnya sendiri. Kirimkan
+              pokok doa Anda untuk kami bawa bersama pada jam Ruang Syafaat pukul 13:00 WIB atau
+              didoakan secara khusus oleh tim pastoral.
+            </p>
+
+            <div data-reveal style={{ ["--delay" as string]: "190ms" }} className="pt-3 space-y-1">
+              <p className="m-0 type-lead italic text-paper-ink">
+                Tim Pelayanan Radio Agape 94.5 FM
+              </p>
+              <p className="m-0 type-small text-paper-muted">
+                Jl. Pringgading 13 ·{" "}
+                <Link href="/donasi" className="text-action">
+                  Yayasan Media Kasih Agape
                 </Link>
+              </p>
+            </div>
+          </div>
 
+          <figure
+            data-reveal
+            style={{ ["--delay" as string]: "95ms" }}
+            className="lg:col-span-6 m-0 space-y-3"
+          >
+            <div className="aspect-[4/5] max-h-[76svh] w-full overflow-clip bg-paper-surface shutter">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={withBasePath("/media/bangunan-kompleks-kota-lama-semarang-01.jpg")}
+                width={1920}
+                height={2560}
+                alt="Balkon dan atap bangunan tua di kawasan Kota Lama Semarang menghadap langit sore"
+                loading="lazy"
+                decoding="async"
+                className="plate-photo"
+              />
+            </div>
+            <figcaption className="type-small text-paper-muted">
+              Sudut teduh Kota Lama Semarang di dekat Jl. Pringgading.
+            </figcaption>
+          </figure>
+        </div>
+      </section>
+
+      {/* 4. CTA (Full-bleed Semarang Bandungan dawn photograph, text confined to right half on desktop) */}
+      <section className="relative bg-paper-ink text-[#ebe5e3]">
+        <div className="relative h-[52svh] lg:h-[84svh] w-full overflow-clip">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={withBasePath("/media/sunrise-bandungan-semarang-regency-2014-10-01.jpg")}
+            width={1920}
+            height={1280}
+            alt="Sinar fajar menembus kabut pagi di atas perbukitan Bandungan Kabupaten Semarang"
+            loading="lazy"
+            decoding="async"
+            className="plate-photo object-[center_35%]"
+          />
+          <div
+            aria-hidden="true"
+            className="hidden lg:block absolute inset-0"
+            style={{
+              background: "rgba(22, 18, 16, 0.58)",
+            }}
+          />
+
+          {/* Desktop Right-Half Overlay */}
+          <div className="hidden lg:grid grid-cols-12 items-end h-full absolute inset-0 px-[var(--margin)] pb-20">
+            <div className="col-start-7 col-span-6 space-y-5 max-w-[42ch]" data-reveal>
+              <h2 className="type-head m-0 text-[#ffffff]">Titipkan pokok doa</h2>
+              <p className="type-body m-0 text-[#ebe5e3]">
+                Sampaikan pergumulan kesehatan, keluarga, atau pekerjaan Anda untuk didoakan pada
+                Ruang Syafaat pukul 13:00 WIB maupun secara pribadi oleh tim pastoral kami.
+              </p>
+              <div className="pt-2">
                 <Link
                   href="/doa"
-                  className="inline-flex items-center gap-2 px-5 py-3.5 rounded-full text-sm font-semibold text-amber-300 hover:text-amber-200 hover:bg-amber-500/10 border border-amber-500/30 transition"
+                  className="inline-flex items-center justify-center min-h-[52px] px-7 bg-paper text-paper-ink font-medium type-body no-underline hover:bg-paper-surface transition-colors"
                 >
-                  <HeartHandshake className="w-4 h-4" />
-                  Kirim Pokok Doa
+                  Tulis Permohonan Doa
                 </Link>
               </div>
             </div>
-
-            {/* Right On-Air Spotlight Card */}
-            <div className="lg:col-span-5">
-              <div className="relative rounded-2xl bg-gradient-to-br from-slate-800/90 to-slate-900/90 border border-slate-700/80 p-6 sm:p-7 shadow-2xl backdrop-blur-md">
-                {/* Badge Status */}
-                <div className="flex items-center justify-between pb-4 border-b border-slate-700/60 mb-5">
-                  <div className="flex items-center gap-2">
-                    <span className="flex h-3 w-3 relative">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
-                    </span>
-                    <span className="text-xs font-bold uppercase tracking-widest text-red-400">
-                      ON AIR SAAT INI
-                    </span>
-                  </div>
-                  <span className="text-xs font-semibold px-2.5 py-1 rounded bg-agape-500/20 text-agape-300 border border-agape-500/30">
-                    {currentProgram.startTime} - {currentProgram.endTime} WIB
-                  </span>
-                </div>
-
-                {/* Program Details */}
-                <div className="space-y-3">
-                  <span className="inline-block text-xs font-semibold uppercase tracking-wider text-amber-400">
-                    {currentProgram.category}
-                  </span>
-                  <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                    {currentProgram.title}
-                  </h3>
-                  <p className="text-xs sm:text-sm text-slate-300 font-medium">
-                    Host: <span className="text-white font-semibold">{currentProgram.host}</span>
-                  </p>
-                  <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
-                    {currentProgram.description}
-                  </p>
-                </div>
-
-                {/* Interactive Action within Card */}
-                <div className="mt-6 pt-5 border-t border-slate-700/60 flex items-center justify-between gap-3">
-                  <button
-                    onClick={() => playLive()}
-                    className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 transition shadow-md"
-                  >
-                    {isLive && isPlaying ? (
-                      <>
-                        <Pause className="w-4 h-4 fill-current" /> Jeda Suara
-                      </>
-                    ) : (
-                      <>
-                        <Play className="w-4 h-4 fill-current" /> Putar Sekarang
-                      </>
-                    )}
-                  </button>
-
-                  <a
-                    href={RADIO_INFO.whatsappBroadcast}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 py-2.5 px-4 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white transition"
-                    title="Kirim salam atau request lagu via WhatsApp"
-                  >
-                    <PhoneCall className="w-3.5 h-3.5" />
-                    Salam / Request
-                  </a>
-                </div>
-
-                {/* Up Next Mini Sneak Peek */}
-                <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
-                  <span className="font-medium text-slate-400">Berikutnya:</span>
-                  <span className="text-slate-200 font-semibold truncate ml-2">
-                    {nextProgram.title} ({nextProgram.startTime} WIB)
-                  </span>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
-      </section>
 
-      {/* 2. VALUE PROPOSITION BAR */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-          <div className="p-4 sm:p-5 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-start gap-3">
-            <div className="p-2.5 rounded-xl bg-agape-500/10 text-agape-400 border border-agape-500/20">
-              <Radio className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="text-sm font-bold text-white">Live 24 Jam</h4>
-              <p className="text-xs text-slate-400 mt-0.5">Siaran tanpa henti setiap hari</p>
-            </div>
-          </div>
-
-          <div className="p-4 sm:p-5 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-start gap-3">
-            <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
-              <Headphones className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="text-sm font-bold text-white">Audio Persisten</h4>
-              <p className="text-xs text-slate-400 mt-0.5">Audio tidak putus saat ganti menu</p>
-            </div>
-          </div>
-
-          <div className="p-4 sm:p-5 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-start gap-3">
-            <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-              <HeartHandshake className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="text-sm font-bold text-white">Layanan Doa</h4>
-              <p className="text-xs text-slate-400 mt-0.5">Dukungan doa bagi yang bergumul</p>
-            </div>
-          </div>
-
-          <div className="p-4 sm:p-5 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-start gap-3">
-            <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20">
-              <Sparkles className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="text-sm font-bold text-white">Podcast Renungan</h4>
-              <p className="text-xs text-slate-400 mt-0.5">Dengarkan kapan saja on-demand</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 3. TODAY'S SCHEDULE HIGHLIGHT */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
-          <div>
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-agape-400 mb-1">
-              <Calendar className="w-4 h-4" /> Panduan Siaran
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-white">
-              List Penayangan Hari Ini
-            </h2>
-          </div>
+        {/* Phone Solid Block Below Image (per cta blueprint) */}
+        <div className="lg:hidden px-[var(--margin)] py-12 space-y-5 bg-paper-ink text-[#ebe5e3]">
+          <h2 className="type-head m-0 text-[#ffffff]">Titipkan pokok doa</h2>
+          <p className="type-body m-0 text-[#ebe5e3]">
+            Sampaikan pergumulan Anda untuk didoakan pada Ruang Syafaat pukul 13:00 WIB maupun
+            secara pribadi oleh tim pastoral kami.
+          </p>
           <Link
-            href="/jadwal"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-amber-400 hover:text-amber-300 transition"
+            href="/doa"
+            className="w-full inline-flex items-center justify-center min-h-[52px] px-6 bg-paper text-paper-ink font-medium type-body no-underline"
           >
-            Lihat Jadwal Lengkap 7 Hari <ChevronRight className="w-4 h-4" />
+            Tulis Permohonan Doa
           </Link>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {MOCK_SCHEDULE.slice(0, 3).map((item, idx) => (
-            <div
-              key={item.id}
-              className={`p-5 rounded-2xl border transition-all ${
-                idx === 2
-                  ? "bg-slate-800/90 border-agape-500/50 shadow-lg shadow-agape-500/10 ring-1 ring-agape-500/30"
-                  : "bg-slate-900/60 border-slate-800 hover:border-slate-700"
-              }`}
-            >
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-bold px-2.5 py-1 rounded-md bg-slate-800 text-slate-200 border border-slate-700">
-                  {item.startTime} - {item.endTime} WIB
-                </span>
-                {idx === 2 ? (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-red-400 uppercase tracking-wider">
-                    <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-                    ON AIR
-                  </span>
-                ) : (
-                  <span className="text-xs text-slate-400 font-medium">
-                    {item.category}
-                  </span>
-                )}
-              </div>
-              <h4 className="text-base font-bold text-white mb-1">
-                {item.title}
-              </h4>
-              <p className="text-xs text-amber-300/90 font-medium mb-2">
-                Bersama: {item.host}
-              </p>
-              <p className="text-xs text-slate-400 leading-relaxed line-clamp-2">
-                {item.description}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* 4. PODCAST SPOTLIGHT */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
-          <div>
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-400 mb-1">
-              <Headphones className="w-4 h-4" /> Audio on Demand
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-white">
-              Podcast Khotbah & Renungan Terkini
-            </h2>
-          </div>
-          <Link
-            href="/podcast"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-amber-400 hover:text-amber-300 transition"
-          >
-            Semua Episode Podcast <ChevronRight className="w-4 h-4" />
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {MOCK_PODCASTS.slice(0, 3).map((pod) => (
-            <div
-              key={pod.id}
-              className="group rounded-2xl bg-slate-900/70 border border-slate-800 overflow-hidden hover:border-slate-700 transition flex flex-col"
-            >
-              <div className="relative h-44 w-full overflow-hidden bg-slate-800">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={pod.coverImage}
-                  alt={pod.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent" />
-                <span className="absolute bottom-3 left-3 text-[11px] font-semibold px-2 py-0.5 rounded bg-slate-900/80 text-amber-400 backdrop-blur-sm border border-slate-700">
-                  {pod.series}
-                </span>
-                <span className="absolute bottom-3 right-3 text-[11px] font-medium px-2 py-0.5 rounded bg-slate-900/80 text-slate-300 backdrop-blur-sm">
-                  {pod.duration}
-                </span>
-              </div>
-
-              <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
-                <div className="space-y-1.5">
-                  <h4 className="text-base font-bold text-white group-hover:text-amber-300 transition line-clamp-2">
-                    {pod.title}
-                  </h4>
-                  <p className="text-xs text-slate-400 font-medium">
-                    {pod.speaker} • {pod.publishedDate}
-                  </p>
-                  <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed pt-1">
-                    {pod.showNotes}
-                  </p>
-                </div>
-
-                <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between">
-                  <span className="text-[11px] text-amber-400 font-medium">
-                    📖 {pod.scripture}
-                  </span>
-                  <button
-                    onClick={() => playPodcast(pod)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-agape-600 hover:bg-agape-500 text-white shadow transition"
-                  >
-                    <Play className="w-3.5 h-3.5 fill-current" />
-                    Putar
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* 5. PRAYER CALLOUT BANNER */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="rounded-3xl bg-gradient-to-r from-agape-900/80 via-slate-900 to-amber-950/70 border border-agape-500/30 p-8 sm:p-12 relative overflow-hidden shadow-2xl">
-          <div className="relative z-10 max-w-2xl space-y-4">
-            <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-amber-400">
-              <HeartHandshake className="w-4 h-4" /> Pelayanan Doa Bersama
-            </span>
-            <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
-              Apakah Anda Sedang Mengalami Pergumulan?
-            </h2>
-            <p className="text-sm sm:text-base text-slate-300 leading-relaxed">
-              Kami rindu berdiri bersama Anda di dalam doa. Kirimkan pokok doa Anda untuk didoakan secara langsung di siaran radio atau didoakan khusus secara pribadi oleh tim pastoral kami.
-            </p>
-            <div className="pt-2 flex flex-wrap items-center gap-4">
-              <Link
-                href="/doa"
-                className="px-6 py-3 rounded-full text-sm font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 transition shadow-lg shadow-amber-500/20"
-              >
-                Kirimkan Permohonan Doa Sekarang &rarr;
-              </Link>
-              <Link
-                href="/donasi"
-                className="px-6 py-3 rounded-full text-sm font-semibold text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 transition"
-              >
-                Dukungan & Donasi Kasih
-              </Link>
-            </div>
-          </div>
         </div>
       </section>
     </div>
